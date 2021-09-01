@@ -1,0 +1,68 @@
+./build/program.a(user_main.o): In function `initLed':
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_create'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_update_ip'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_create_service'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_add_service'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_start'
+./build/program.a(user_main.o): In function `initMDNS':
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_create'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_update_ip'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_create_service'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_add_service'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `mdns_start'
+./build/program.a(user_main.o):(.text.initWifi+0x34): undefined reference to `wifi_station_set_hostname'
+./build/program.a(user_main.o):(.text.initWifi+0x38): undefined reference to `IPADDR2_COPY'
+./build/program.a(user_main.o):(.text.initWifi+0x3c): undefined reference to `wifi_station_set_reconnect_policy'
+./build/program.a(user_main.o):(.text.initWifi+0x57): undefined reference to `wifi_station_set_hostname'
+./build/program.a(user_main.o):(.text.initWifi+0x156): undefined reference to `IPADDR2_COPY'
+./build/program.a(user_main.o):(.text.initWifi+0x166): undefined reference to `IPADDR2_COPY'
+./build/program.a(user_main.o):(.text.initWifi+0x17d): undefined reference to `IPADDR2_COPY'
+./build/program.a(user_main.o): In function `initWifi':
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `wifi_station_set_reconnect_policy'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `IPADDR2_COPY'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `IPADDR2_COPY'
+/home/hmurad/esp/karadio/src/user_main.c:505: undefined reference to `IPADDR2_COPY'
+./build/program.a(user_main.o):(.text.user_init+0x54): undefined reference to `system_get_flash_size_map'
+./build/program.a(user_main.o): In function `user_init':
+/home/hmurad/esp/karadio/src/user_main.c:570: undefined reference to `system_get_flash_size_map'
+./build/program.a(webserver.o): In function `setRelVolume':
+/home/hmurad/esp/karadio/src/webserver.c:344: undefined reference to `wifi_station_get_rssi'
+/home/hmurad/esp/karadio/src/webserver.c:344: undefined reference to `wifi_station_get_rssi'
+./build/program.a(interface.o): In function `wifiScanCallback':
+/home/hmurad/esp/karadio/src/interface.c:330: undefined reference to `mdns_destroy'
+./build/program.a(interface.o): In function `setHostname':
+/home/hmurad/esp/karadio/src/interface.c:330: undefined reference to `mdns_destroy'
+./build/program.a(interface.o): In function `readAdc':
+/home/hmurad/esp/karadio/src/interface.c:330: undefined reference to `wifi_station_get_rssi'
+./build/program.a(vs1053.o):(.text.VS1053_HW_init+0x4): undefined reference to `PIN_DIR_OUTPUT'
+./build/program.a(vs1053.o):(.text.VS1053_HW_init+0xc): undefined reference to `PIN_DIR_INPUT'
+./build/program.a(vs1053.o):(.text.VS1053_HW_init+0x10): undefined reference to `PIN_OUT_SET'
+./build/program.a(vs1053.o): In function `SPIPutChar':
+/home/hmurad/esp/karadio/src/vs1053.c:543: undefined reference to `PIN_IN'
+./build/program.a(vs1053.o):(.text.VS1053_SendMusicBytes$part$1+0x4): undefined reference to `PIN_OUT_CLEAR'
+./build/program.a(ota.o): In function `update_firmware':
+/home/hmurad/esp/karadio/src/ota.c:63: undefined reference to `system_get_flash_size_map'
+./build/program.a(upgrade_lib.o): In function `system_upgrade_internal':
+/home/hmurad/esp/karadio/src/upgrade_lib.c:88: undefined reference to `system_get_flash_size_map'
+/home/hmurad/esp/karadio/src/upgrade_lib.c:109: undefined reference to `system_get_flash_size_map'
+collect2: error: ld returned 1 exit status
+/home/hmurad/esp/esp-open-rtos//common.mk:232: recipe for target 'build/karadio.out' failed
+make: *** [build/karadio.out] Error 1
+
+
+
+
+
+IPADDR2_COPY
+
+wifi_station_get_rssi                user_interface.h esp_sta.h
+wifi_station_set_hostname            user_interface.h esp_sta.h
+wifi_station_set_reconnect_policy    user_interface.h esp_sta.h
+system_get_flash_size_map            user_interface.h esp_system.h
+
+mdns_create
+mdns_update_ip
+mdns_create_service
+mdns_add_service
+mdns_start
+mdns_destroy
