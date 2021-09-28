@@ -40,7 +40,8 @@ typedef enum {
                               ///< %xB-F are reserved for further control frames
 } wsopcode_t;
 
-typedef struct {
+typedef struct
+{
         bool fin;
 //        bool rsv1;
 //        bool rsv2;

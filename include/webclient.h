@@ -7,14 +7,16 @@
 
 #include "c_types.h"
 
-#define METADATA 9
-#define METAINT 8
-#define BITRATE 5
-#define METANAME 0
+#define METADATA          9
+#define METAINT           8
+#define BITRATE           5
+#define METANAME          0
 #define ICY_HEADERS_COUNT 9
-#define ICY_HEADER_COUNT 10
+#define ICY_HEADER_COUNT  10
+
 //2000 1440 1460
-#define RECEIVE 1440
+#define RECEIVE           1440
+
 extern uint16_t currentStation;
 
 struct icyHeader
@@ -40,7 +42,7 @@ struct icyHeader
 
 
 
-enum clientStatus {C_HEADER0, C_HEADER, C_HEADER1,C_METADATA, C_DATA, C_PLAYLIST, C_PLAYLIST1 };
+enum clientStatus { C_HEADER0, C_HEADER, C_HEADER1,C_METADATA, C_DATA, C_PLAYLIST, C_PLAYLIST1 };
 
 void clientInit();
 uint8_t clientIsConnected();
@@ -62,4 +64,5 @@ void wsVol(char* vol);
 void wsMonitor();
 void wsStationNext();
 void wsStationPrev();
+
 #endif

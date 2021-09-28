@@ -26,7 +26,8 @@
 #define HOSTLEN		24
 #define USERAGLEN	39
 
-struct device_settings {
+struct device_settings
+{
 	uint8_t dhcpEn;
 	uint8_t ipAddr[4];
 	uint8_t mask[4];
@@ -50,7 +51,8 @@ struct device_settings {
 	uint8_t pass2[60];
 };
 
-struct device_settings1 {
+struct device_settings1
+{
 	uint16_t cleared; 		// 0xAABB if initialized
 	uint32_t sleepValue;		//6
 	uint32_t wakeValue;		//10
@@ -63,7 +65,8 @@ struct device_settings1 {
 	uint8_t fill[169-HOSTLEN-1];
 };
 
-struct shoutcast_info {
+struct shoutcast_info
+{
 	char domain[73]; //url
 	char file[116];  //path
 	char name[64];
@@ -71,7 +74,8 @@ struct shoutcast_info {
 	uint16_t port;   //port
 };
 
-struct shoutcast_info_ext {
+struct shoutcast_info_ext
+{
     uint8_t  futur[256];
 };
 
@@ -96,7 +100,6 @@ void saveDeviceSettings1(struct device_settings1 *settings);
 struct device_settings* getDeviceSettings();
 struct device_settings* getDeviceSettingsSilent();
 struct device_settings1* getDeviceSettings1(void);
-
 
 // Protect: html page is password protected.
 void setProtect(bool);

@@ -13,7 +13,6 @@
 #include "interface.h"
 #include "eeprom.h"
 #include "flash.h"
-#include "spi.h"
 
 #define ICACHE_STORE_TYPEDEF_ATTR __attribute__((aligned(4),packed))
 #define ICACHE_STORE_ATTR __attribute__((aligned(4)))
@@ -46,12 +45,12 @@ struct device_settings1 device1;
 bool fdevice1 = false;
 */
 
-const char streMSG[]  ICACHE_RODATA_ATTR STORE_ATTR  = {"Warning %s malloc low memory\n"};
+const char streMSG[]        ICACHE_RODATA_ATTR STORE_ATTR  = {"Warning %s malloc low memory\n"};
 const char saveStationPos[] ICACHE_RODATA_ATTR STORE_ATTR  = {"saveStation fails pos=%d\n"};
-const char getStationPos[] ICACHE_RODATA_ATTR STORE_ATTR  = {"getStation fails pos=%d\n"};
-const char streERASE[] ICACHE_RODATA_ATTR STORE_ATTR  = {"erase setting1 (only one time) \n"};
-const char streGETDEVICE[] ICACHE_RODATA_ATTR STORE_ATTR  = {"getDeviceSetting%d fails\n"};
-const char streSETDEVICE[] ICACHE_RODATA_ATTR STORE_ATTR  = {"saveDeviceSetting%d:  null\n"};
+const char getStationPos[]  ICACHE_RODATA_ATTR STORE_ATTR  = {"getStation fails pos=%d\n"};
+const char streERASE[]      ICACHE_RODATA_ATTR STORE_ATTR  = {"erase setting1 (only one time) \n"};
+const char streGETDEVICE[]  ICACHE_RODATA_ATTR STORE_ATTR  = {"getDeviceSetting%d fails\n"};
+const char streSETDEVICE[]  ICACHE_RODATA_ATTR STORE_ATTR  = {"saveDeviceSetting%d:  null\n"};
 
 uint32_t Eeprom_start;
 uint32_t Eeprom_start1;
@@ -67,31 +66,34 @@ uint32_t getFlashChipRealSize(void)
     return (1 << ((sdk_spi_flash_get_id() >> 16) & 0xFF));
 }
 
-
-ICACHE_FLASH_ATTR void eeGetDatax(uint32_t eeprom, int address, void* buffer, int size) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR void eeGetDatax(uint32_t eeprom, int address, void* buffer, int size)
+{
 int result;
 //printf("eeGetDatax, eeprom + address= %d, size= %d\n",eeprom + address,  size);
 	result = sdk_spi_flash_read(eeprom + address, (uint32_t *)buffer, size);
 }
 
-ICACHE_FLASH_ATTR void eeGetData(int address, void* buffer, int size) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR void eeGetData(int address, void* buffer, int size)
+{
 //printf("eeGetData, address= %d, size= %d\n", address,  size);
 	eeGetDatax(Eeprom_start,address,buffer,size);
 }
-ICACHE_FLASH_ATTR void eeGetData1(int address, void* buffer, int size) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR void eeGetData1(int address, void* buffer, int size)
+{
 	eeGetDatax(Eeprom_start1,address,buffer,size);
 }
 
-ICACHE_FLASH_ATTR bool eeSetDatax(uint32_t eeprom,int address, void* buffer, int size) { // address, size in BYTES !!!!
-	uint8_t* inbuf = buffer;
+ICACHE_FLASH_ATTR bool eeSetDatax(uint32_t eeprom,int address, void* buffer, int size)
+{
+uint8_t* inbuf = buffer;
 int result;
 uint32_t* eebuf= malloc(4096);
 vTaskDelay(1); 
 uint16_t i = 0;
 if (eebuf != NULL)
 {
-	while(1) {
-		
+	while(1)
+	{
 		uint32_t sector = (eeprom + address) & 0xFFF000;
 		uint8_t* eebuf8 = (uint8_t*)eebuf;
 		uint16_t startaddr = address & 0xFFF;
@@ -114,7 +116,8 @@ if (eebuf != NULL)
 //printf("set2 startaddr: %x, size:%x, maxsize: %x, sector: %x, eebuf: %x\n",startaddr,size,maxsize,sector,eebuf);
 	}
 	free (eebuf);
-} else 
+}
+else 
 {
 	printf(streMSG,"eebuf");/*heapSize();*/
 	return false;
@@ -122,16 +125,19 @@ if (eebuf != NULL)
 return true;
 }
 
-ICACHE_FLASH_ATTR bool eeSetData(int address, void* buffer, int size) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR bool eeSetData(int address, void* buffer, int size)
+{
 	return eeSetDatax(Eeprom_start, address, buffer, size);
 }
-ICACHE_FLASH_ATTR bool  eeSetData1(int address, void* buffer, int size) { // address, size in BYTES !!!!
+
+ICACHE_FLASH_ATTR bool  eeSetData1(int address, void* buffer, int size)
+{
 	return eeSetDatax(Eeprom_start1, address, buffer, size);
 }
 
-ICACHE_FLASH_ATTR void eeSetClear(int address,uint8_t* eebuf) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR void eeSetClear(int address,uint8_t* eebuf)
+{
 		int i;
-		spi_clock(HSPI, 4, 10); //2MHz
 		WRITE_PERI_REG(0x60000914, 0x73); //WDT clear
 		uint32_t sector = (Eeprom_start + address) & 0xFFF000;
 		sdk_spi_flash_erase_sector(sector >> 12);
@@ -139,9 +145,9 @@ ICACHE_FLASH_ATTR void eeSetClear(int address,uint8_t* eebuf) { // address, size
 		sdk_spi_flash_write(sector, (uint32_t *)eebuf, 4096);
 }
 
-ICACHE_FLASH_ATTR void eeSetClear1(int address,uint8_t* eebuf) { // address, size in BYTES !!!!
+ICACHE_FLASH_ATTR void eeSetClear1(int address,uint8_t* eebuf)
+{
 		int i;
-		spi_clock(HSPI, 4, 10); //2MHz
 		WRITE_PERI_REG(0x60000914, 0x73); //WDT clear
 		uint32_t sector = (Eeprom_start1 + address) & 0xFFF000;
 		sdk_spi_flash_erase_sector(sector >> 12);
@@ -149,7 +155,8 @@ ICACHE_FLASH_ATTR void eeSetClear1(int address,uint8_t* eebuf) { // address, siz
 		sdk_spi_flash_write(sector, (uint32_t *)eebuf, 4096);
 }
 
-ICACHE_FLASH_ATTR void eeEraseAll() {
+ICACHE_FLASH_ATTR void eeEraseAll()
+{
 uint8_t* buffer= malloc(4096);
 int i = 0;
 //	printf("erase All\n");
@@ -174,8 +181,8 @@ int i = 0;
 	}
 }
 
-
-ICACHE_FLASH_ATTR void eeErasesettings1(void) {
+ICACHE_FLASH_ATTR void eeErasesettings1(void)
+{
 uint8_t* buffer= malloc(4096);
 int i = 0;
 	if (buffer != NULL)
@@ -192,7 +199,8 @@ int i = 0;
 	}
 }
 
-ICACHE_FLASH_ATTR void eeEraseStations() {
+ICACHE_FLASH_ATTR void eeEraseStations()
+{
 	uint8_t* buffer = malloc(4096);
 	int i=0;
 	while (buffer == NULL) 
@@ -216,7 +224,8 @@ ICACHE_FLASH_ATTR void eeEraseStations() {
 	} else printf(streMSG,"eeEraseStations");
 }
 
-ICACHE_FLASH_ATTR void saveStation(struct shoutcast_info *station, uint16_t position) {
+ICACHE_FLASH_ATTR void saveStation(struct shoutcast_info *station, uint16_t position)
+{
 	uint32_t i = 0;
 	if (position > NBSTATIONS-1) {printf(saveStationPos,position); return;}
 	while (!eeSetData((position+1)*256, station, 256)) 
@@ -228,9 +237,11 @@ ICACHE_FLASH_ATTR void saveStation(struct shoutcast_info *station, uint16_t posi
 		if (i == 10) return;
 	}
 }
-ICACHE_FLASH_ATTR void saveMultiStation(struct shoutcast_info *station, uint16_t position, uint8_t number) {
+
+ICACHE_FLASH_ATTR void saveMultiStation(struct shoutcast_info *station, uint16_t position, uint8_t number)
+{
 	uint32_t i = 0;
-	while ((position +number-1) > NBSTATIONS-1) {printf(saveStationPos,position+number-1); number--; }
+	while ((position +number-1) > NBSTATIONS-1) { printf(saveStationPos,position+number-1); number--; }
 	if (number <= 0) return;
 	while (!eeSetData((position+1)*256, station, number*256))
 	{		
@@ -264,7 +275,9 @@ ICACHE_FLASH_ATTR void saveMultiStation(struct shoutcast_info *station, uint16_t
 	return (struct shoutcast_info*)buffer;
 }
 */
-ICACHE_FLASH_ATTR struct shoutcast_info* getStation(uint8_t position) {
+
+ICACHE_FLASH_ATTR struct shoutcast_info* getStation(uint8_t position)
+{
 	if (position > NBSTATIONS-1) {printf(PSTR("getStation fails pos=%d\n"),position); return NULL;}
 	uint8_t* buffer = malloc(256);
 	uint8_t i = 0;
@@ -281,19 +294,23 @@ ICACHE_FLASH_ATTR struct shoutcast_info* getStation(uint8_t position) {
 	return (struct shoutcast_info*)buffer;
 }
 
-ICACHE_FLASH_ATTR void saveDeviceSettings(struct device_settings *settings) {
+ICACHE_FLASH_ATTR void saveDeviceSettings(struct device_settings *settings)
+{
 	if (settings == NULL) { printf(streSETDEVICE,0);return;}
 //printf("saveDeviceSettings\n");
 	eeSetData(0, settings, 256);
 }
-ICACHE_FLASH_ATTR void saveDeviceSettings1(struct device_settings1 *settings) {
+
+ICACHE_FLASH_ATTR void saveDeviceSettings1(struct device_settings1 *settings)
+{
 	if (settings == NULL) { printf(streSETDEVICE,1);return;}
 //printf("saveDeviceSettings1\n");
 	eeSetData1(0, settings, 256);
 }
 
 /*
-ICACHE_FLASH_ATTR struct device_settings* getOldDeviceSettings() {
+ICACHE_FLASH_ATTR struct device_settings* getOldDeviceSettings()
+{
 	uint8_t* buffer = malloc(256);
 	if(buffer)
 	{
@@ -303,7 +320,8 @@ ICACHE_FLASH_ATTR struct device_settings* getOldDeviceSettings() {
 }
 */
 
-ICACHE_FLASH_ATTR struct device_settings* getDeviceSettingsSilent() {
+ICACHE_FLASH_ATTR struct device_settings* getDeviceSettingsSilent()
+{
 	uint16_t size = 256;
 	uint8_t* buffer = malloc(size);
 	if(buffer)
@@ -314,7 +332,8 @@ ICACHE_FLASH_ATTR struct device_settings* getDeviceSettingsSilent() {
 	return NULL;
 }
 
-ICACHE_FLASH_ATTR struct device_settings* getDeviceSettings() {
+ICACHE_FLASH_ATTR struct device_settings* getDeviceSettings()
+{
 	uint16_t size = 256;
 	uint8_t* buffer = malloc(size);
 	if(buffer)
@@ -327,7 +346,8 @@ ICACHE_FLASH_ATTR struct device_settings* getDeviceSettings() {
 	return NULL;
 }
 
-ICACHE_FLASH_ATTR struct device_settings1* getDeviceSettings1() {
+ICACHE_FLASH_ATTR struct device_settings1* getDeviceSettings1()
+{
 	uint16_t size = 256;
 	uint8_t* buffer = malloc(size);
 	if(buffer) {

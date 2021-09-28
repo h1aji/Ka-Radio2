@@ -56,7 +56,8 @@ typedef void (*upgrade_states_check_callback)(void *arg);
 
 //#define UPGRADE_SSL_ENABLE
 
-struct upgrade_server_info {
+struct upgrade_server_info
+{
     struct sockaddr_in sockaddrin;            /**< socket of upgrading */
     upgrade_states_check_callback check_cb;   /**< callback of upgrading */
     uint32_t check_times;                     /**< time out of upgrading, unit : ms */

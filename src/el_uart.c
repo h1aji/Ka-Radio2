@@ -23,7 +23,8 @@ static void uart_isr(void *arg)
 	}
 	WRITE_PERI_REG(UART_INT_CLR(UART0), UART_RXFIFO_FULL_INT_CLR);
 
-    while (READ_PERI_REG(UART_STATUS(UART0)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
+    while (READ_PERI_REG(UART_STATUS(UART0)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S))
+	{
 		temp = READ_PERI_REG(UART_FIFO(UART0)) & 0xFF;
 		ret = xQueueSendToBackFromISR ( uart_rx_queue, &temp, &xHigherPriorityTaskWoken );
 		if (ret != pdTRUE)

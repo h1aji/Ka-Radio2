@@ -7,13 +7,12 @@
 extern  uint32_t PIN_OUT;
 extern  uint32_t PIN_OUT_SET;
 extern  uint32_t PIN_OUT_CLEAR;
-
 extern  uint32_t PIN_DIR;
 extern  uint32_t PIN_DIR_OUTPUT;
 extern  uint32_t PIN_DIR_INPUT;
 
 #define PERIPHS_IO_MUX_GPIO2_U          (PERIPHS_IO_MUX + 0x38)
-#define FUNC_GPIO2                          0
+#define FUNC_GPIO2                      0
 
 void ICACHE_FLASH_ATTR gpio2_output_conf(void)
 {

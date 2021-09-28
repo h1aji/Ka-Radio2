@@ -24,8 +24,6 @@
 #include "lwip/netdb.h"
 #include "lwip/ip4_addr.h"
 
-#include <lwip/apps/mdns.h>
-
 #include "webserver.h"
 #include "webclient.h"
 #include "buffer.h"
@@ -52,7 +50,8 @@ const char striHEAP[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Heap size: %d\n"};
 const char striUART[] ICACHE_RODATA_ATTR STORE_ATTR  = {"UART READY%c"};
 const char striWATERMARK[] ICACHE_RODATA_ATTR STORE_ATTR  = {"watermark %s: %d  heap:%d\n"};
 
-typedef enum {
+typedef enum
+{
     FLASH_SIZE_4M_MAP_256_256 = 0,  /**<  Flash size : 4Mbits. Map : 256KBytes + 256KBytes */
     FLASH_SIZE_2M,                  /**<  Flash size : 2Mbits. Map : 256KBytes */
     FLASH_SIZE_8M_MAP_512_512,      /**<  Flash size : 8Mbits. Map : 512KBytes + 512KBytes */
@@ -69,7 +68,6 @@ typedef enum {
 
 //ip
 static char localIp[20] = {"0.0.0.0"};
-static mdnsHandle *mdns = NULL;
 void sdk_uart_div_modify(int no, unsigned int freq);
 
 //struct station_config config;
@@ -89,11 +87,10 @@ void cb(sc_status stat, void *pdata)
 }
 */
 
-char* getIp() { return (localIp);}
-mdnsHandle* getMdns() { return mdns;}
-void setMdns(mdnsHandle* toset) {mdns= toset;}
+char* getIp() { return (localIp); }
 
-void testtask(void* p) {
+void testtask(void* p)
+{
 struct device_settings *device;
 /*
 	int uxHighWaterMark;
@@ -132,7 +129,8 @@ struct device_settings *device;
 }
 
 
-ICACHE_FLASH_ATTR void ledCallback(void *pArg) {
+ICACHE_FLASH_ATTR void ledCallback(void *pArg)
+{
 struct device_settings *device;
 	FlashCount++;
 	if ((ledStatus)&&(FlashCount == FlashOff)) gpio2_output_set(1);
@@ -177,22 +175,6 @@ ICACHE_FLASH_ATTR void initLed(void)
 //	printf("initLed done\n");
 }
 
-
-//-------------------------
-// mDNS management
-//-------------------------
-void initMDNS(char* host,uint32_t ip)
-{
-	ip_address_t addrip;
-	ip6_address_t addrv6 = { 0 };
-	addrip.addr = ip;
-	mdns = mdns_create(host);
-	mdns_update_ip(mdns, addrip, addrv6);
-	mdnsService *service;
-	service= mdns_create_service("_http", mdnsProtocolTCP, 80);
-	mdns_add_service(mdns, service);
-	mdns_start(mdns);
-}
 
 
 //-------------------------
@@ -353,7 +335,6 @@ void initWifi()
 	}
 	else strcpy(hostn,device1->hostname);
 	printf(PSTR("HOSTNAME: %s\nLocal IP: %s\n"),hostn,localIp);
-	initMDNS(hostn,info->ip.addr);
 	
 	free(info);
 	free(device);
@@ -361,7 +342,8 @@ void initWifi()
 	free(config);
 }
 
-void uartInterfaceTask(void *pvParameters) {
+void uartInterfaceTask(void *pvParameters)
+{
 	char tmp[255];
 	struct device_settings *device;
 	initWifi();
@@ -408,8 +390,10 @@ void uartInterfaceTask(void *pvParameters) {
 	ledStatus = ((device->options & T_LED)== 0);
 //
 	free(device);
-	while(1) {
-		while(1) {
+	while(1)
+	{
+		while(1)
+		{
 			int c = uart_getchar_ms(100);
 			if (c!= -1)
 			{
@@ -513,6 +497,7 @@ uint32_t user_rf_cal_sector_set(void)
 	}
 }
 */
+
 /******************************************************************************
  * FunctionName : checkUart
  * Description  : Check for a valid uart baudrate
@@ -528,6 +513,7 @@ uint32_t checkUart(uint32_t speed)
 	}
 	return 115200; // default
 }
+
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here

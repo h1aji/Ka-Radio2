@@ -7,7 +7,8 @@
 #define __NTP_H__
 #include <time.h>
 
-typedef struct {
+typedef struct
+{
 	uint8_t options;
 	uint8_t stratum;
 	uint8_t poll;

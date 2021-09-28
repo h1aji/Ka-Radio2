@@ -11,6 +11,7 @@
 	uint8_t buffer[BUFFER_SIZE];
 #endif
 */
+
 bool externram;
 uint32_t BUFFER_SIZE;
 uint8_t *buffer;
@@ -31,30 +32,39 @@ ICACHE_FLASH_ATTR void initBuffer()
 		 BUFFER_SIZE = BIGMEMORY;
 	 }	 	 
 }
-ICACHE_FLASH_ATTR uint32_t getBufferFree() {
+
+ICACHE_FLASH_ATTR uint32_t getBufferFree()
+{
 	if(wptr > rptr ) return BUFFER_SIZE - wptr + rptr;
 	else if(wptr < rptr) return rptr - wptr;
 	else if(bempty) return BUFFER_SIZE; else return 0;
 }
-ICACHE_FLASH_ATTR bool getBufferEmpty() {
+
+ICACHE_FLASH_ATTR bool getBufferEmpty()
+{
 	return bempty;
 }
 
-ICACHE_FLASH_ATTR uint32_t getBufferFilled() {
+ICACHE_FLASH_ATTR uint32_t getBufferFilled()
+{
 	return BUFFER_SIZE - getBufferFree();
 }
 
-ICACHE_FLASH_ATTR uint32_t bufferWrite(uint8_t *data, uint32_t size) {
-	if (externram==false){
+ICACHE_FLASH_ATTR uint32_t bufferWrite(uint8_t *data, uint32_t size)
+{
+	if (externram==false)
+	{
 		uint32_t i;
-		for(i=0; i<size; i++) {
+		for(i=0; i<size; i++)
+		{
 			if(getBufferFree() == 0) { return i;}
 			buffer[wptr++] = data[i];
 			if(bempty) bempty = 0;
 			if(wptr == BUFFER_SIZE) wptr = 0;
 		}
 	}
-	else{
+	else
+	{
 		if(getBufferFree() < size) size = getBufferFree();
 		extramWrite(size, wptr, data);
 		wptr += size;
@@ -64,19 +74,23 @@ ICACHE_FLASH_ATTR uint32_t bufferWrite(uint8_t *data, uint32_t size) {
 	return size;
 }
 
-ICACHE_FLASH_ATTR uint32_t bufferRead(uint8_t *data, uint32_t size) {
+ICACHE_FLASH_ATTR uint32_t bufferRead(uint8_t *data, uint32_t size)
+{
 	uint32_t i = 0;
 	uint32_t bf = getBufferFilled();
 	if(size > bf) size = bf;
-
-	if (externram==false){
-		for (i = 0; i < size; i++) {
-			if(bf == 0) { return i;}
+	if (externram==false)
+	{
+		for (i = 0; i < size; i++)
+		{
+			if(bf == 0) { return i; }
 			data[i] = buffer[rptr++];
 			if(rptr == BUFFER_SIZE) rptr = 0;
 			if(rptr == wptr) bempty = 1;
 		}
-	} else{
+	}
+	else
+	{
 		extramRead(size, rptr, data);
 		rptr += size;
 		if(rptr >= BUFFER_SIZE) rptr -= BUFFER_SIZE;
@@ -85,7 +99,8 @@ ICACHE_FLASH_ATTR uint32_t bufferRead(uint8_t *data, uint32_t size) {
 	return size;
 }
 
-ICACHE_FLASH_ATTR void bufferReset() {
+ICACHE_FLASH_ATTR void bufferReset()
+{
 	wptr = 0;
 	rptr = 0;
 	bempty = 1;

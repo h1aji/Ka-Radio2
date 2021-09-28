@@ -12,49 +12,35 @@
 #include "vs1053.h"
 #include "eeprom.h"
 #include "stdio.h"
-#include "spi.h"
 #include "interface.h"
 
+#include "esp/spi.h"
 
 //#include "osapi.h"
 #include <math.h>
 #include <string.h>
-
 
 extern uint8_t clientIvol ;
 
 int vsVersion ; // the version of the chip
 //SS_VER is 0 for VS1001, 1 for VS1011, 2 for VS1002, 3 for VS1003, 4 for VS1053 and VS8053, 5 for VS1033, 7 for VS1103, and 6 for VS1063.
 //char strvMODE[] ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_Mode (0x4800) = 0x%X\n"};
-const char strvSTATUS[] ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_Status (0x48) = 0x%X\n"};
+const char strvSTATUS[]  ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_Status (0x48) = 0x%X\n"};
 const char strvVERSION[] ICACHE_RODATA_ATTR STORE_ATTR  = {"VS Version (VS1053 is 4) = %d\n"};
-const char strvCLOCK[] ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_ClockF = 0x%X\n"};
-const char strvI2S[] ICACHE_RODATA_ATTR STORE_ATTR  = {"I2S Speed: %d\n"};
+const char strvCLOCK[]   ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_ClockF = 0x%X\n"};
+const char strvI2S[]     ICACHE_RODATA_ATTR STORE_ATTR  = {"I2S Speed: %d\n"};
 
 extern uint32_t PIN_OUT;
 extern uint32_t PIN_OUT_SET;
 extern uint32_t PIN_OUT_CLEAR;
+
 extern uint32_t PIN_DIR;
 extern uint32_t PIN_DIR_OUTPUT;
 extern uint32_t PIN_DIR_INPUT;
+
 extern uint32_t PIN_IN;
 
-extern uint32_t PIN_0;
-extern uint32_t PIN_2;
-
-
-#define RST_PIN  0
-#define CS_PIN   15
-#define XDCS_PIN 5
-#define DREQ_PIN 4
-
-// define SPI interface
-#define SPI_BUS       1
-#define SPI_SCK_GPIO  14
-#define SPI_MOSI_GPIO 13
-#define SPI_MISO_GPIO 12
-#define SPI_CS_GPIO   15
-
+#define TMAX 4096
 
 ICACHE_FLASH_ATTR void VS1053_HW_init()
 {
@@ -116,19 +102,19 @@ ICACHE_FLASH_ATTR void SDI_ChipSelect(uint8_t State)
 	else PIN_OUT_SET = (1<<XDCS_PIN);
 }
 
-ICACHE_FLASH_ATTR uint8_t checkDREQ() {
+ICACHE_FLASH_ATTR uint8_t checkDREQ()
+{
 	return (PIN_IN & (1<<DREQ_PIN));
 }
 
-#define TMAX 4096
-void  WaitDREQ() {
+void  WaitDREQ()
+{
 	uint16_t  time_out = 0;
 	while((PIN_IN & (1<<DREQ_PIN)) == 0 && time_out++ < TMAX)
 	{
 		;
 	}
 }
-
 
 ICACHE_FLASH_ATTR void VS1053_WriteRegister(uint8_t addressbyte, uint8_t highbyte, uint8_t lowbyte)
 {
@@ -186,7 +172,8 @@ ICACHE_FLASH_ATTR void VS1053_ResetChip()
 	Delay(10);
 }
 
-ICACHE_FLASH_ATTR uint16_t MaskAndShiftRight(uint16_t Source, uint16_t Mask, uint16_t Shift){
+ICACHE_FLASH_ATTR uint16_t MaskAndShiftRight(uint16_t Source, uint16_t Mask, uint16_t Shift)
+{
 	return ( (Source & Mask) >> Shift );
 }
 
@@ -238,9 +225,11 @@ void VS1053_LowPower()
 {
 	VS1053_WriteRegister(SPI_CLOCKF,0x00,0x00);
 }
+
 // normal chip consumption
-void VS1053_HighPower(){
-   if (vsVersion == 4) // only 1053
+void VS1053_HighPower()
+{
+	if (vsVersion == 4) // only 1053
 		VS1053_WriteRegister(SPI_CLOCKF,0xB8,0x00); // SC_MULT = x1, SC_ADD= x1
 	else
 		VS1053_WriteRegister(SPI_CLOCKF,0xb0,0x00);
@@ -320,7 +309,8 @@ you do not need to reload the patch.*/
 			}
 			VS1053_InitVS();
 			VS1053_Admix(false);
-		} else  // no patch
+		}
+		else  // no patch
 		{
 			VS1053_InitVS();
 		}
@@ -344,7 +334,7 @@ ICACHE_FLASH_ATTR int VS1053_SendMusicBytes(uint8_t* music, uint16_t quantity)
 	if(quantity ==0) return 0;
 	spi_take_semaphore();
 	int o = 0;
-	while(checkDREQ() == 0) {vTaskDelay(1);}
+	while(checkDREQ() == 0) { vTaskDelay(1); }
 	VS1053_SPI_SpeedUp();
 	SDI_ChipSelect(SET);
 	while(quantity)
@@ -381,6 +371,7 @@ ICACHE_FLASH_ATTR void VS1053_SetVolumeLine(int16_t vol)
 	if (vol < -31) vol = -31;
 	VS1053_WriteRegister(SPI_AICTRL0,(vol&0xFF00)>>8,vol&0xFF);
 }
+
 // activate or stop admix plugin (true = activate)
 ICACHE_FLASH_ATTR void VS1053_Admix(bool val)
 {
@@ -404,21 +395,24 @@ uint8_t value =  VS1053_ReadRegister(SPI_VOL) & 0x00FF;
 	}	
 	return 127;
 }
+
 ICACHE_FLASH_ATTR uint8_t VS1053_GetVolumeLinear()
 {
 	return VS1053_ReadRegister(SPI_VOL) & 0x00FF;
 }
+
 /**
  * Function sets the same volume level to both channels.
  * @param xMinusHalfdB describes damping level as a multiple
  * of 0.5dB. Maximum volume is 0 and silence is 0xFEFE.
  */
-ICACHE_FLASH_ATTR void VS1053_SetVolume(uint8_t xMinusHalfdB){
+ICACHE_FLASH_ATTR void VS1053_SetVolume(uint8_t xMinusHalfdB)
+{
 uint8_t value = (log10(255/((float)xMinusHalfdB+1)) * 105.54571334);
 //printf("setvol: %d\n",value);
 if (value == 255) value = 254;
 //printf("xMinusHalfdB=%d  value=%d\n",xMinusHalfdB,value);
-	VS1053_WriteRegister(SPI_VOL,value,value);
+VS1053_WriteRegister(SPI_VOL,value,value);
 }
 
 /**
@@ -461,6 +455,7 @@ ICACHE_FLASH_ATTR void VS1053_SetTrebleFreq(uint8_t xkHz)
 	if ( xkHz <= 15 )
 		VS1053_WriteRegister( SPI_BASS, MaskAndShiftRight(bassReg,0xF000,8) | xkHz, bassReg & 0x00FF );
 }
+
 ICACHE_FLASH_ATTR int8_t VS1053_GetTrebleFreq()
 {
 	return ( (VS1053_ReadRegister(SPI_BASS) & 0x0F00) >> 8);
@@ -481,7 +476,8 @@ ICACHE_FLASH_ATTR uint8_t VS1053_GetBass()
  * @param xdB Value of bass enhancement from 0 (off) to 15(dB).
  * @return void
  */
-ICACHE_FLASH_ATTR void VS1053_SetBass(uint8_t xdB){
+ICACHE_FLASH_ATTR void VS1053_SetBass(uint8_t xdB)
+{
 	uint16_t bassReg = VS1053_ReadRegister(SPI_BASS);
 	if (xdB <= 15)
 		VS1053_WriteRegister(SPI_BASS, (bassReg & 0xFF00) >> 8, (bassReg & 0x000F) | (xdB << 4) );
@@ -516,7 +512,8 @@ ICACHE_FLASH_ATTR uint8_t VS1053_GetSpatial()
 	return ((spatial&1) | ((spatial>>2) & 2));
 }
 
-ICACHE_FLASH_ATTR void VS1053_SetSpatial(uint8_t num){
+ICACHE_FLASH_ATTR void VS1053_SetSpatial(uint8_t num)
+{
 	if (vsVersion != 4) return ;
 	uint16_t spatial = VS1053_ReadRegister(SPI_MODE);
 	if (num >=0 && num <= 3)

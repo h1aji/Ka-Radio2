@@ -13,7 +13,7 @@
 #define ICACHE_RAM_ATTR __attribute__((section(".iram0.text")))
 
 // 117
-const unsigned short admix[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR    = { /* Compressed plugin */
+const unsigned short admix[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR = { /* Compressed plugin */
 
   0x0007, 0x0001, 0x8f00, 0x0006, 0x0070, 0x2803, 0xc2c0, 0x0030, /*    0 */
   0x0697, 0x0fff, 0xfdc0, 0x3700, 0x4024, 0xb100, 0x0024, 0xbc82, /*    8 */
@@ -31,10 +31,10 @@ const unsigned short admix[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR    = { /* Comp
   0x8024, 0x36f0, 0x9804, 0x36f4, 0xd806, 0x3602, 0x8024, 0x0030, /*   68 */
   0x0717, 0x2100, 0x0000, 0x3f05, 0xdbd7,
 };
+
 #define ADMIX_SIZE 117
 
-
-const unsigned short patch[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR   = { /* Compressed plugin */
+const unsigned short patch[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR  = { /* Compressed plugin */
 	0x0007,0x0001, /*copy 1*/
 	0x8050,
 	0x0006,0x001e, /*copy 30*/
@@ -656,7 +656,8 @@ const unsigned short patch[] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR   = { /* Compr
 };
 
 
-void ICACHE_FLASH_ATTR  LoadUserCode( const unsigned short* plugin,uint16_t size) {
+void ICACHE_FLASH_ATTR  LoadUserCode( const unsigned short* plugin,uint16_t size)
+{
   int i = 0;
   unsigned short* iplugin;
   int ssize = size;
@@ -671,7 +672,8 @@ void ICACHE_FLASH_ATTR  LoadUserCode( const unsigned short* plugin,uint16_t size
   flashRead( iplugin,(uint32_t) plugin, size );
 //  if (flashRead( iplugin,(uint32_t) plugin, size ) != 0) kprintf(PSTR("plugin read error\n")) ;
   kprintf(PSTR("plugin start: %x %x %x\n"),*iplugin,*(iplugin+1),*(iplugin+2));
-  while (i<ssize) {
+  while (i<ssize)
+  {
     unsigned short addr, n, val;
     addr = iplugin[i++];
     n =  iplugin[i++];
@@ -682,8 +684,11 @@ void ICACHE_FLASH_ATTR  LoadUserCode( const unsigned short* plugin,uint16_t size
         WriteVS10xxRegister(addr, val);
 //		kprintf(PSTR("write %x at %x \n"),val,addr);
       }
-    } else {           /* Copy run, copy n samples */
-      while (n--) {
+    }
+	else
+	{           /* Copy run, copy n samples */
+      while (n--)
+	  {
         val = iplugin[i++];
         WriteVS10xxRegister(addr, val);
 //		kprintf(PSTR("write %x at %x \n"),val,addr);
@@ -700,5 +705,3 @@ void ICACHE_FLASH_ATTR  LoadUserCodes(void)
 	Delay(100);
 	LoadUserCode(admix,ADMIX_SIZE);
 }
-
-

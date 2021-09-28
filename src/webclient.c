@@ -53,9 +53,7 @@ static char clientURL[URLMAX]= {0,0};
 static char clientPath[PATHMAX] = {0,0};
 static uint16_t clientPort = 80;
 
-
 struct hostent *server = NULL;
-
 
 void *incmalloc(size_t n)
 {
@@ -67,15 +65,13 @@ void *incmalloc(size_t n)
 //	printf ("Client malloc after of %d bytes ret:%x  Heap size: %d\n",n,ret,xPortGetFreeHeapSize( ));
 	return ret;
 }	
+
 void incfree(void *p,char* from)
 {
 	if (p != NULL) free(p);
 //	else printf ("Client incfree from %s NULL\n",from);
 //	printf ("Client incfree of %x, from %s           Heap size: %d\n",p,from,xPortGetFreeHeapSize( ));
 }	
-
-
-
 
 ICACHE_FLASH_ATTR bool getState()
 {
@@ -667,6 +663,7 @@ ICACHE_FLASH_ATTR void clientSilentConnect()
 		clientSilentDisconnect();
 	}
 }
+
 ICACHE_FLASH_ATTR void clientSilentDisconnect()
 {
 	xSemaphoreGive(sDisconnect);
@@ -1032,6 +1029,7 @@ if (l > 80) dump(inpdata,len);
 
 #define VSTASKBUF 2048 //1024
 uint8_t b[VSTASKBUF];
+
 IRAM_ATTR void vsTask(void *pvParams)
 {
 //	portBASE_TYPE uxHighWaterMark;

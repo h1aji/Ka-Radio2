@@ -19,8 +19,8 @@
 /*
 // A task if needed
 
-ICACHE_FLASH_ATTR void ntpTask(void *pvParams) {
-
+ICACHE_FLASH_ATTR void ntpTask(void *pvParams)
+{
 	while (1)
 	{
 		vTaskDelay(60000);
@@ -30,7 +30,8 @@ ICACHE_FLASH_ATTR void ntpTask(void *pvParams) {
 */
 
 // get ntp time and return an allocated tm struct (UTC)
-bool ICACHE_FLASH_ATTR ntp_get_time(struct tm **dt) {
+bool ICACHE_FLASH_ATTR ntp_get_time(struct tm **dt)
+{
 	struct timeval timeout;
 	timeout.tv_usec = 0;
 	timeout.tv_sec = 5000;  // bug *1000 for seconds
@@ -74,17 +75,20 @@ bool ICACHE_FLASH_ATTR ntp_get_time(struct tm **dt) {
 		break;
 	}
 // set a timeout for recvfrom
-	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0){
+	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
+	{
 		kprintf(PSTR("##SYS.DATE#: ntp fails on %s %d\n"),"setsockopt",0);	free (msg);freeaddrinfo(servinfo);	close(sockfd);
 		return false;
 	} 	
 //send the request	
-	if ((rv = sendto(sockfd, msg, sizeof(ntp_t), 0,p->ai_addr, p->ai_addrlen)) == -1) {
+	if ((rv = sendto(sockfd, msg, sizeof(ntp_t), 0,p->ai_addr, p->ai_addrlen)) == -1)
+	{
 		kprintf(PSTR("##SYS.DATE#: ntp fails on %s %d\n"),"sendto",rv); free (msg);freeaddrinfo(servinfo);	close(sockfd);
 		return false;					
 	}
 	freeaddrinfo(servinfo);	
- 	if ((rv = recvfrom(sockfd, msg, sizeof(ntp_t) , 0,NULL, NULL)) <=0) {
+ 	if ((rv = recvfrom(sockfd, msg, sizeof(ntp_t) , 0,NULL, NULL)) <=0)
+	{
 		kprintf(PSTR("##SYS.DATE#: ntp fails on %s %d\n"),"recvfrom",rv);free(msg);close(sockfd);
 		return false;	
 	}	
@@ -102,12 +106,12 @@ bool ICACHE_FLASH_ATTR ntp_get_time(struct tm **dt) {
 }
 
 // print  date time in ISO-8601 local time format
-void ICACHE_FLASH_ATTR ntp_print_time() {
+void ICACHE_FLASH_ATTR ntp_print_time()
+{
 	struct tm* dt;
 	int8_t tz;	
 	char msg[30];
-	
-	if (ntp_get_time(&dt) )
+	if ( ntp_get_time(&dt) )
 	{
 		tz =applyTZ(dt);
 //	os_printf("##Time: isdst: %d %02d:%02d:%02d\n",dt->tm_isdst, dt->tm_hour, dt->tm_min, dt->tm_sec);		
@@ -120,5 +124,4 @@ void ICACHE_FLASH_ATTR ntp_print_time() {
 		else
 			kprintf(PSTR("##SYS.DATE#: %s%03d:00\n"),msg,tz);
 	}
-		
 }

@@ -1,6 +1,6 @@
 
 #include "flash.h"
-#include "spi.h"
+#include "esp/spi.h"
 #include <espressif/esp_common.h>
 
 ICACHE_FLASH_ATTR uint32_t flashRead( void *to, uint32_t fromaddr, uint32_t size )
@@ -11,7 +11,7 @@ ICACHE_FLASH_ATTR uint32_t flashRead( void *to, uint32_t fromaddr, uint32_t size
 //  printf("flasRead from %x, size: %d  TO:%x\n",fromaddr,size,to);
   WRITE_PERI_REG(0x60000914, 0x73);
   spi_take_semaphore();
-  spi_clock(HSPI, 4, 10); //2MHz
+  //spi_clock(HSPI, 4, 10); //2MHz
   ret = sdk_spi_flash_read(fromaddr, (uint32_t *)to, size);
   spi_give_semaphore();
   return ret;
@@ -25,7 +25,7 @@ ICACHE_FLASH_ATTR uint32_t flashWrite( void *data, uint32_t fromaddr, uint32_t s
 //  int r;
   WRITE_PERI_REG(0x60000914, 0x73);
   spi_take_semaphore();
-  spi_clock(HSPI, 4, 10); //2MHz
+  //spi_clock(HSPI, 4, 10); //2MHz
   ret = sdk_spi_flash_write(fromaddr, (uint32_t *)data, size);
   spi_give_semaphore();
   return ret;

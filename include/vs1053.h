@@ -1,6 +1,5 @@
+
 /*
- * VS1053.h
- *
  *  Created on: 25-04-2011
  *  Author: Przemyslaw Stasiak
  */
@@ -8,15 +7,27 @@
 #pragma once
 #include "c_types.h"
 
-#define SET 1
+#define RST_PIN       0
+#define CS_PIN        15
+#define XDCS_PIN      5
+#define DREQ_PIN      4
+
+// define SPI interface
+#define SPI_BUS       1
+#define SPI_SCK_GPIO  14
+#define SPI_MOSI_GPIO 13
+#define SPI_MISO_GPIO 12
+#define SPI_CS_GPIO   15
+
+#define SET   1
 #define RESET 0
 
 #ifndef VS1053_H_
 #define VS1053_H_
 
-#define RXNE    0x01
-#define TXE     0x02
-#define BSY     0x80
+#define RXNE                0x01
+#define TXE                 0x02
+#define BSY                 0x80
 
 #define VS_WRITE_COMMAND 	0x02
 #define VS_READ_COMMAND 	0x03
@@ -38,9 +49,9 @@
 #define SPI_AICTRL3     	0x0f
 #define SM_DIFF         	0x01
 #define SM_JUMP         	0x02
-#define SM_LAYER12		0x02
+#define SM_LAYER12		    0x02
 #define SM_RESET        	0x04
-#define SM_CANCEL               0x08
+#define SM_CANCEL           0x08
 #define SM_OUTOFWAV     	0x08
 #define SM_PDOWN        	0x10
 #define SM_TESTS        	0x20
@@ -129,4 +140,3 @@ void VS1053_SPI_SpeedDown();
 //void VS1053_PluginLoad();
 
 #endif /* VS1053_H_ */
-

@@ -6,7 +6,6 @@
 #include <espressif/user_interface.h>
 #include <espressif/esp_common.h>
 
-#include <lwip/apps/mdns.h>
 #include <mdnsresponder.h>
 
 //#include "osapi.h"
@@ -111,9 +110,7 @@ extern void playStation(char* id);
 extern void setVolume(char* vol);
 extern void setRelVolume(int8_t vol);
 extern uint16_t getVolume(void);
-//extern mdnsHandle* getMdns();
-//extern void setMdns(mdnsHandle* toset);
-//extern void initMDNS(char* ,uint32_t );
+
 ICACHE_FLASH_ATTR void clientVol(char *s);
 
 #define MAX_WIFI_STATIONS 50
@@ -158,34 +155,24 @@ int kasprintf(char *dest, const char *fmt, ...)
 	return ret;
 }
 
-
 unsigned short adcdiv;	
+
 void setHostname(char* s)
 {
 	struct ip_info  *info;
-	//mdnsHandle* mydns = getMdns();
 	info = malloc(sizeof(struct ip_info));
 //	printf("HOSTAME0  %s. Need to restart\n",s);
-
-/*	if (mydns != NULL)
-	{
-		//mdns_destroy(mydns);
-		printf("HOSTAME0  Destroy\n");
-	}
-*/
 	vTaskDelay(1);
 //	printf("HOSTAME1\n");
-	sdk_wifi_get_ip_info ( STATION_IF, info );
+	wifi_get_ip_info ( STATION_IF, info );
 	vTaskDelay(1);
 //	printf("HOSTAME2\n");
-//	initMDNS(s ,info->ip.addr);
-
-	mdns_init();
-        mdns_resp_add_netif(info->ip.addr, s, 120);
-
+    mdns_init();
+	mdns_add_A(s, 120, info->ip.addr);
 	vTaskDelay(1);
 	free(info);
 }
+
 //display or change the hostname and services
 void chostname(char* s)
 {
