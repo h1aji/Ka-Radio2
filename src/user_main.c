@@ -411,7 +411,7 @@ UART_SetBaudrate(uint8_t uart_no, uint32_t baud_rate) {
 uint32_t user_rf_cal_sector_set(void)
 {
     uint32_t rf_cal_sec = 0;
-    flash_size_map size_map = system_get_flash_size_map();
+    flash_size_map size_map = sdk_flashchip.chip_size;
     switch (size_map) {
         case FLASH_SIZE_4M_MAP_256_256:
             rf_cal_sec = 128 - 5;
@@ -521,7 +521,7 @@ void user_init(void)
 	printf (PSTR("Heap size: %d\n"),xPortGetFreeHeapSize( ));
 	clientInit();
 //	Delay(10);
-	flash_size_map size_map = system_get_flash_size_map();
+	flash_size_map size_map = sdk_flashchip.chip_size;
 	printf (PSTR("size_map: %d\n"),size_map);
 	printf(PSTR("Flash size: %d\n"),getFlashChipRealSize());
 	xTaskCreate(testtask, "t0", 140, NULL, 1, &pxCreatedTask); // DEBUG/TEST 130

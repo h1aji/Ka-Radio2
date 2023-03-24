@@ -93,7 +93,7 @@ void update_firmware(char* fname)
     {
         server->url = (uint8_t *)malloc(512);
     }
-    flash_size_map f_size = system_get_flash_size_map();
+    flash_size_map f_size = sdk_flashchip.chip_size;
     kprintf(PSTR("flash size  %d\n"),f_size);
     if (current_id == 0)
 	{

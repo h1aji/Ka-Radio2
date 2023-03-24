@@ -76,7 +76,7 @@ LOCAL struct upgrade_param *upgrade;
 
 LOCAL bool OUT_OF_RANGE(uint16_t erase_sec)
 {
-	uint8_t spi_size_map = system_get_flash_size_map();
+	uint8_t spi_size_map = sdk_flashchip.chip_size;
 	uint16_t sec_num = 0;
 	uint16_t start_sec = 0;
 	if (spi_size_map == FLASH_SIZE_8M_MAP_512_512 ||
@@ -264,7 +264,7 @@ bool system_upgrade(uint8_t *data, uint32_t len)
 void system_upgrade_init(void)
 {
         uint32_t user_bin2_start,user_bin1_start;
-	uint8_t spi_size_map = system_get_flash_size_map();
+	uint8_t spi_size_map = sdk_flashchip.chip_size;
 	
 	if (upgrade == NULL) 
 	{

@@ -281,8 +281,8 @@ ICACHE_FLASH_ATTR void VS1053_Start()
 		if ((vsVersion == 4) && ((device->options&T_PATCH)==0))
 		{
 			/*The patch must be re-loaded after each
-hardware or software reset. If you replace software reset by writing 0x50 to AIADDR,
-you do not need to reload the patch.*/
+                          hardware or software reset. If you replace software reset by writing 0x50 to AIADDR,
+                          you do not need to reload the patch.*/
 			LoadUserCodes() ; // vs1053b patch and admix
 			printf("SPI_AUDATA2= %x\n",VS1053_ReadRegister(SPI_AUDATA));
 			if (VS1053_ReadRegister(SPI_AUDATA) == 0xAC45) //midi mode?
