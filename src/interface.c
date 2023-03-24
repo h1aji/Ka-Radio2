@@ -164,7 +164,7 @@ void setHostname(char* s)
 //	printf("HOSTAME0  %s. Need to restart\n",s);
 	vTaskDelay(1);
 //	printf("HOSTAME1\n");
-	wifi_get_ip_info ( STATION_IF, info );
+	sdk_wifi_get_ip_info ( STATION_IF, info );
 	vTaskDelay(1);
 //	printf("HOSTAME2\n");
     mdns_init();
@@ -219,8 +219,8 @@ void readAdc()
 void readRssi()
 {
 	int8_t rssi;
-	rssi = wifi_station_get_rssi();
-	kprintf(PSTR("##RSSI: %d\n"),rssi);
+//	rssi = wifi_station_get_rssi();
+//	kprintf(PSTR("##RSSI: %d\n"),rssi);
 }
 // Read the command panel
 void switchCommand() {
@@ -829,7 +829,7 @@ ICACHE_FLASH_ATTR void syspatch(char* s)
 		return;
     }	
 	uint8_t value = atoi(t+2);
-	if (value ==0) 
+	if (value == 0) 
 		device->options |= T_PATCH; 
 	else 
 		device->options &= NT_PATCH; // 0 = load patch
@@ -844,7 +844,6 @@ ICACHE_FLASH_ATTR void sysled(char* s)
     char *t = strstr(s, parslashquote);
 	struct device_settings *device;
 	device = getDeviceSettings();
-	extern bool ledStatus;
 	if(t == NULL)
 	{
 		kprintf(PSTR("##Led is in %s mode#\n"),((device->options & T_LED)== 0)?"Blink":"Play");
@@ -859,11 +858,7 @@ ICACHE_FLASH_ATTR void sysled(char* s)
 		return;
     }	
 	uint8_t value = atoi(t+2);
-	if (value ==0) 
-	{device->options |= T_LED; ledStatus = false; if (getState()) gpio2_output_set(0);}
-	else 
-	{device->options &= NT_LED; ledStatus =true;} // options:0 = ledStatus true = Blink mode
-	
+	if (value != 0)
 	saveDeviceSettings(device);	
 	free(device);
 

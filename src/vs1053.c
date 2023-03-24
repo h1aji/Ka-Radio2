@@ -9,16 +9,20 @@
   ***********************************************************************************************************************
 */
 
+#include <stdlib.h>
+#include "espressif/esp_common.h"
+#include "esp8266.h"
+#include "esp/spi.h"
+
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include <task.h>
+
 #include "vs1053.h"
 #include "eeprom.h"
 #include "stdio.h"
 #include "interface.h"
 
-#include "esp/spi.h"
-
-//#include "osapi.h"
-#include <math.h>
-#include <string.h>
 
 extern uint8_t clientIvol ;
 
@@ -30,50 +34,51 @@ const char strvVERSION[] ICACHE_RODATA_ATTR STORE_ATTR  = {"VS Version (VS1053 i
 const char strvCLOCK[]   ICACHE_RODATA_ATTR STORE_ATTR  = {"SCI_ClockF = 0x%X\n"};
 const char strvI2S[]     ICACHE_RODATA_ATTR STORE_ATTR  = {"I2S Speed: %d\n"};
 
-extern uint32_t PIN_OUT;
-extern uint32_t PIN_OUT_SET;
-extern uint32_t PIN_OUT_CLEAR;
-
-extern uint32_t PIN_DIR;
-extern uint32_t PIN_DIR_OUTPUT;
-extern uint32_t PIN_DIR_INPUT;
-
-extern uint32_t PIN_IN;
 
 #define TMAX 4096
 
+SemaphoreHandle_t sSPI = NULL;
+
+ICACHE_FLASH_ATTR uint8_t spi_take_semaphore()
+{
+	if(sSPI) if(xSemaphoreTake(sSPI, portMAX_DELAY)) return 1;
+	return 0;
+}
+
+ICACHE_FLASH_ATTR void spi_give_semaphore()
+{
+	if(sSPI) xSemaphoreGive(sSPI);
+}
+
+
 ICACHE_FLASH_ATTR void VS1053_HW_init()
 {
-	spi_init(HSPI);
-	spi_clock(HSPI, 4, 10); //2MHz
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 3);
-	PIN_DIR_OUTPUT |= (1<<RST_PIN)|(1<<CS_PIN)|(1<<XDCS_PIN);
-	PIN_DIR_INPUT |= (1<<DREQ_PIN);
-	PIN_OUT_SET |= (1<<RST_PIN)|(1<<CS_PIN)|(1<<XDCS_PIN);
+	spi_init(1, SPI_MODE0, SPI_FREQ_DIV_2M, true, SPI_LITTLE_ENDIAN, true);
+
+	gpio_enable(CS_PIN, GPIO_OUTPUT);
+	gpio_enable(XDCS_PIN, GPIO_OUTPUT);
+	gpio_enable(RST_PIN, GPIO_OUTPUT);
+	gpio_enable(DREQ_PIN, GPIO_INPUT);
 }
 
 ICACHE_FLASH_ATTR void VS1053_SPI_SpeedUp()
 {
-	spi_clock(HSPI, 4, 2); //10MHz
-//	spi_clock(HSPI, 4, 3); //6.66MHz
-//	spi_clock(HSPI, 3, 3); //8.88MHz
+	spi_set_frequency_div(1, SPI_FREQ_DIV_10M);
 }
 
 ICACHE_FLASH_ATTR void VS1053_SPI_SpeedDown()
 {
-	spi_clock(HSPI, 4, 10); //2MHz
+	spi_set_frequency_div(1, SPI_FREQ_DIV_2M);
 }
 
 ICACHE_FLASH_ATTR void SPIPutChar(uint8_t data)
 {
-	spi_tx8(HSPI, data);
-	while(spi_busy(HSPI));
+	spi_transfer_8(1, data);
 }
 
 ICACHE_FLASH_ATTR uint8_t SPIGetChar()
 {
-	while(spi_busy(HSPI));
-	return spi_rx8(HSPI);
+//	return spi_transfer_8(1);
 }
 
 ICACHE_FLASH_ATTR void Delay(uint32_t nTime)
@@ -81,39 +86,27 @@ ICACHE_FLASH_ATTR void Delay(uint32_t nTime)
 	unsigned int i;
 	unsigned long j;
 	for(i = nTime;i > 0;i--)
-		for(j = 1000;j > 0;j--);
+	for(j = 1000;j > 0;j--);
 }
 
 ICACHE_FLASH_ATTR void ControlReset(uint8_t State)
 {
-	if(State) PIN_OUT_CLEAR = (1<<RST_PIN);
-	else PIN_OUT_SET = (1<<RST_PIN);
+	gpio_write(RST_PIN, State);
 }
 
 ICACHE_FLASH_ATTR void SCI_ChipSelect(uint8_t State)
 {
-	if(State) PIN_OUT_CLEAR = (1<<CS_PIN);
-	else PIN_OUT_SET = (1<<CS_PIN);
+	gpio_write(CS_PIN, State);
 }
 
 ICACHE_FLASH_ATTR void SDI_ChipSelect(uint8_t State)
 {
-	if(State) PIN_OUT_CLEAR = (1<<XDCS_PIN);
-	else PIN_OUT_SET = (1<<XDCS_PIN);
+	gpio_write(XDCS_PIN, State);
 }
 
-ICACHE_FLASH_ATTR uint8_t checkDREQ()
+ICACHE_FLASH_ATTR uint8_t VS1053_checkDREQ()
 {
-	return (PIN_IN & (1<<DREQ_PIN));
-}
-
-void  WaitDREQ()
-{
-	uint16_t  time_out = 0;
-	while((PIN_IN & (1<<DREQ_PIN)) == 0 && time_out++ < TMAX)
-	{
-		;
-	}
+	return gpio_read(DREQ_PIN);
 }
 
 ICACHE_FLASH_ATTR void VS1053_WriteRegister(uint8_t addressbyte, uint8_t highbyte, uint8_t lowbyte)
@@ -121,15 +114,14 @@ ICACHE_FLASH_ATTR void VS1053_WriteRegister(uint8_t addressbyte, uint8_t highbyt
 	spi_take_semaphore();
 	VS1053_SPI_SpeedDown();
 	SDI_ChipSelect(RESET);
-	WaitDREQ();
+	while(VS1053_checkDREQ() == 0);
 	SCI_ChipSelect(SET);
 	SPIPutChar(VS_WRITE_COMMAND);
 	SPIPutChar(addressbyte);
 	SPIPutChar(highbyte);
 	SPIPutChar(lowbyte);
-	WaitDREQ();
+	while(VS1053_checkDREQ() == 0);
 	SCI_ChipSelect(RESET);
-//	VS1053_SPI_SpeedUp();
 	spi_give_semaphore();
 }
 
@@ -140,15 +132,14 @@ ICACHE_FLASH_ATTR uint16_t VS1053_ReadRegister(uint8_t addressbyte)
 	VS1053_SPI_SpeedDown();
 	uint16_t result;
 	SDI_ChipSelect(RESET);
-	WaitDREQ();
+	while(VS1053_checkDREQ() == 0);
 	SCI_ChipSelect(SET);
 	SPIPutChar(VS_READ_COMMAND);
 	SPIPutChar(addressbyte);
 	result = SPIGetChar() << 8;
 	result |= SPIGetChar();
-	WaitDREQ();
+	while(VS1053_checkDREQ() == 0);
 	SCI_ChipSelect(RESET);
-//	VS1053_SPI_SpeedUp();
 	spi_give_semaphore();
 	return result;
 }
@@ -157,7 +148,6 @@ ICACHE_FLASH_ATTR void WriteVS10xxRegister(unsigned short addr,unsigned short va
 {
 	VS1053_WriteRegister((uint8_t)addr&0xff, (uint8_t)((val&0xFF00)>>8), (uint8_t)(val&0xFF));
 }
-
 
 ICACHE_FLASH_ATTR void VS1053_ResetChip()
 {
@@ -168,7 +158,7 @@ ICACHE_FLASH_ATTR void VS1053_ResetChip()
 //	SDI_ChipSelect(RESET);
 	ControlReset(RESET);
 	Delay(5);
-	if (checkDREQ() == 1) return;
+	if (VS1053_checkDREQ() == 1) return;
 	Delay(10);
 }
 
@@ -260,7 +250,7 @@ ICACHE_FLASH_ATTR void VS1053_InitVS()
 	VS1053_WriteRegister(SPI_CLOCKF,0xb0,0x00);
 	VS1053_WriteRegister(SPI_MODE, (SM_SDINEW|SM_LINE1)>>8,SM_RESET);
 	VS1053_WriteRegister(SPI_MODE, (SM_SDINEW|SM_LINE1)>>8, SM_LAYER12); //mode
-	WaitDREQ();
+	while(VS1053_checkDREQ() == 0);
 	VS1053_regtest();
 // enable I2C dac output
    if (vsVersion == 4) // only 1053
@@ -334,12 +324,12 @@ ICACHE_FLASH_ATTR int VS1053_SendMusicBytes(uint8_t* music, uint16_t quantity)
 	if(quantity ==0) return 0;
 	spi_take_semaphore();
 	int o = 0;
-	while(checkDREQ() == 0) { vTaskDelay(1); }
+	while(VS1053_checkDREQ() == 0) { vTaskDelay(1); }
 	VS1053_SPI_SpeedUp();
 	SDI_ChipSelect(SET);
 	while(quantity)
 	{
-		if(checkDREQ())
+		if(VS1053_checkDREQ())
 		{
 			int t = quantity;
 			int k;
@@ -606,3 +596,4 @@ ICACHE_FLASH_ATTR void VS1053_flush_cancel()
 	for (y = 0; y < 64; y++)
 		VS1053_SendMusicBytes( buf, 32); //2080 bytes
 }
+

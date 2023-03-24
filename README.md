@@ -40,9 +40,9 @@ GPIO14    - SCK
 GPIO12    - MISO
 GPIO13    - MOSI
 GPIO16    - DCS
-GPIO02    - DREQ
+GPIO10    - DREQ
           - RST *
-GPIO15    - CS
+GPIO02    - CS
 
 *=connected through diodes
 ```
@@ -52,7 +52,7 @@ Optional external RAM 23LCV1024 supported
 ```
 ESP pin   - 23LC1024 pin
 ------------------------
-GPIO10    - CS   (1)
+GPIO15    - CS   (1)
 GPIO12    - MISO (2)
           - SIO2 (3) *
 GND       - GND  (4)

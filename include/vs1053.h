@@ -8,16 +8,9 @@
 #include "c_types.h"
 
 #define RST_PIN       0
-#define CS_PIN        15
-#define XDCS_PIN      5
-#define DREQ_PIN      4
-
-// define SPI interface
-#define SPI_BUS       1
-#define SPI_SCK_GPIO  14
-#define SPI_MOSI_GPIO 13
-#define SPI_MISO_GPIO 12
-#define SPI_CS_GPIO   15
+#define CS_PIN        2
+#define XDCS_PIN      16
+#define DREQ_PIN      10
 
 #define SET   1
 #define RESET 0
@@ -29,7 +22,7 @@
 #define TXE                 0x02
 #define BSY                 0x80
 
-#define VS_WRITE_COMMAND 	0x02
+#define VS_WRITE_COMMAND	0x02
 #define VS_READ_COMMAND 	0x03
 #define SPI_MODE        	0x00
 #define SPI_STATUS      	0x01
@@ -49,9 +42,9 @@
 #define SPI_AICTRL3     	0x0f
 #define SM_DIFF         	0x01
 #define SM_JUMP         	0x02
-#define SM_LAYER12		    0x02
+#define SM_LAYER12      	0x02
 #define SM_RESET        	0x04
-#define SM_CANCEL           0x08
+#define SM_CANCEL       	0x08
 #define SM_OUTOFWAV     	0x08
 #define SM_PDOWN        	0x10
 #define SM_TESTS        	0x20
@@ -63,16 +56,16 @@
 #define SM_SDINEW       	0x800
 #define SM_ADPCM        	0x1000
 #define SM_ADPCM_HP     	0x2000
-#define SM_LINE1            0x4000
-#define para_endFillByte    0x1E06
+#define SM_LINE1        	0x4000
+#define para_endFillByte	0x1E06
 
 //public functions
 extern int vsVersion;
-void 	VS1053_HW_init();
-void 	VS1053_SineTest();
-void 	VS1053_I2SRATE(uint8_t speed);
-void	VS1053_Start();
-void	VS1053_I2SRate(uint8_t speed);
+void VS1053_HW_init();
+void VS1053_SineTest();
+void VS1053_I2SRATE(uint8_t speed);
+void VS1053_Start();
+void VS1053_I2SRate(uint8_t speed);
 
 //void VS1053_SendMusicBytes(uint8_t* music,int quantity);
 int VS1053_SendMusicBytes(uint8_t* music,uint16_t quantity);

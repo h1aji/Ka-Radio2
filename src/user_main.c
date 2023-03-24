@@ -39,7 +39,7 @@
 
 #include "interface.h"
 
-const char striDEF0[] ICACHE_RODATA_ATTR STORE_ATTR  = {"The default AP is  WifiKaRadio. Connect your wifi to it.\nThen connect a webbrowser to 192.168.4.1 and go to Setting\nMay be long to load the first time.Be patient.%c"};
+const char striDEF0[] ICACHE_RODATA_ATTR STORE_ATTR  = {"The default AP is WifiKaRadio. Connect your wifi to it.\nThen connect a webbrowser to 192.168.4.1 and go to Setting\nMay be long to load the first time.Be patient.%c"};
 const char striDEF1[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Erase the database and set ssid, password and ip's field%c"};
 const char striAP[] ICACHE_RODATA_ATTR STORE_ATTR    = {"AP1: %s, AP2: %s\n"};
 const char striSTA1[] ICACHE_RODATA_ATTR STORE_ATTR  = {" AP1:Station Ip: %d.%d.%d.%d\n"};
@@ -75,7 +75,6 @@ uint8_t FlashOn = 5,FlashOff = 5;
 uint8_t FlashCount = 0xFF;
 uint8_t FlashVolume = 0;
 sdk_os_timer_t ledTimer;
-bool ledStatus = true; // true: normal blink, false: led on when playing
 //sc_status status = 0;
 
 /*
@@ -98,32 +97,6 @@ struct device_settings *device;
 	printf(striWATERMARK,"testtask",uxHighWaterMark,xPortGetFreeHeapSize( ));
 */
 
-	gpio2_output_conf();
-	vTaskDelay(10);
-	while(FlashCount==0xFF) {
-		if (ledStatus) gpio2_output_set(0);
-		vTaskDelay(FlashOff);
-		if (ledStatus) // on led and save volume if changed
-		{
-			gpio2_output_set(1);
-			vTaskDelay(FlashOn);
-		}
-
-		// save volume if changed
-		device = getDeviceSettings();
-		if (device != NULL)
-		{
-			if (device->vol != clientIvol){
-				device->vol = clientIvol;
-				saveDeviceSettings(device);
-
-//	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-//	printf(striWATERMARK,"testtask",uxHighWaterMark,xPortGetFreeHeapSize( ));
-
-			}
-			free(device);
-		}	
-	}
 //	printf("t0 end\n");
 	vTaskDelete( NULL ); // stop the task
 }
@@ -133,7 +106,6 @@ ICACHE_FLASH_ATTR void ledCallback(void *pArg)
 {
 struct device_settings *device;
 	FlashCount++;
-	if ((ledStatus)&&(FlashCount == FlashOff)) gpio2_output_set(1);
 	if (FlashCount == FlashOn)
 	{
 		if (FlashVolume++ == 5) // every 10 sec
@@ -157,12 +129,6 @@ struct device_settings *device;
 			}
 		}
 	}
-	if ((ledStatus)&&(FlashCount == FlashOn)) // on led and save volume if changed
-	{		
-		gpio2_output_set(0);
-		FlashCount = 0;
-	}	
-		
 }
 
 ICACHE_FLASH_ATTR void initLed(void)
@@ -192,7 +158,7 @@ void initWifi()
 	struct device_settings *device;
 	struct device_settings1* device1;
 	struct sdk_station_config* config;
-	wifi_station_set_hostname("WifiKaRadio");
+//	wifi_station_set_hostname("WifiKaRadio");
 	device = getDeviceSettings();
 	device1 = getDeviceSettings1();  // extention of saved data
 	config = malloc(sizeof(struct sdk_station_config));
@@ -213,15 +179,21 @@ void initWifi()
 	if ((device->ssid[0] == 0xFF)&& (device->ssid2[0] == 0xFF) )  {eeEraseAll(); device = getDeviceSettings();} // force init of eeprom
 	if (device->ssid2[0] == 0xFF) {device->ssid2[0] = 0; device1->pass2[0] = 0; }
 	printf(striAP,device->ssid,device->ssid2);
-	if ((strlen(device->ssid)==0)||(device->ssid[0]==0xff)/*||(device->ipAddr[0] ==0)*/) // first use
+	if ((strlen(device->ssid)==0)||(device->ssid[0]==0xff) /*||(device->ipAddr[0] ==0)*/) // first use
 	{
 		printf(PSTR("first use%c"),0x0d);
 		IP4_ADDR(&(info->ip), 192, 168, 1, 254);
 		IP4_ADDR(&(info->netmask), 0xFF, 0xFF,0xFF, 0);
 		IP4_ADDR(&(info->gw), 192, 168, 1, 254);
+/*
 		IPADDR2_COPY(&device->ipAddr, &info->ip);
 		IPADDR2_COPY(&device->mask, &info->netmask);
 		IPADDR2_COPY(&device->gate, &info->gw);
+*/
+		memcpy(&device->ipAddr, &info->ip, sizeof(&device->ipAddr));    
+        	memcpy(&device->mask, &info->netmask, sizeof(&device->mask));   
+        	memcpy(&device->gate, &info->gw, sizeof(&device->gate));    
+
 		strcpy(device->ssid,config->ssid);
 		strcpy(device->pass,config->password);
 		device->dhcpEn = true;
@@ -311,16 +283,22 @@ void initWifi()
 //			conn = true;
 			free(apconfig);
 			break;
-		}//
+		}
 	}
-	wifi_station_set_reconnect_policy(true);
+	//wifi_station_set_reconnect_policy(true);
 	// update device info
 	if (sdk_wifi_get_opmode () == SOFTAP_MODE) sdk_wifi_get_ip_info(SOFTAP_IF, info);
 	else sdk_wifi_get_ip_info(STATION_IF, info); // ip netmask gw
 	sdk_wifi_station_get_config(config);
+/*
 	IPADDR2_COPY(&device->ipAddr, &info->ip);
 	IPADDR2_COPY(&device->mask, &info->netmask);
 	IPADDR2_COPY(&device->gate, &info->gw);
+*/
+	memcpy(&device->ipAddr, &info->ip, sizeof(&device->ipAddr));
+	memcpy(&device->mask, &info->netmask, sizeof(&device->mask));
+	memcpy(&device->gate, &info->gw, sizeof(&device->gate));
+
 	saveDeviceSettings(device);
 	printf(striSTA1,(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
 	kasprintf(localIp,PSTR("%d.%d.%d.%d"),(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
@@ -386,9 +364,6 @@ void uartInterfaceTask(void *pvParameters)
 		vTaskDelay(10);
 		playStationInt(device->currentstation);
 	}
-//
-	ledStatus = ((device->options & T_LED)== 0);
-//
 	free(device);
 	while(1)
 	{

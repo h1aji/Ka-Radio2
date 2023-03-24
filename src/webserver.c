@@ -291,10 +291,11 @@ ICACHE_FLASH_ATTR void setRelVolume(int8_t vol)
 ICACHE_FLASH_ATTR void rssi(int socket)
 {
 		char answer[25];
-		if (kasprintf(answer,PSTR("{\"wsrssi\":\"%d\"}"),wifi_station_get_rssi()))
+/*		if (kasprintf(answer,PSTR("{\"wsrssi\":\"%d\"}"),wifi_station_get_rssi()))
 		{			
 			websocketwrite(socket,answer, strlen(answer));
 		}
+*/
 }
 
 // flip flop the theme indicator
