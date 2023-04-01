@@ -17,12 +17,23 @@
 #define PSTR(s) (__extension__({ static const char __c[] STORE_ATTR __attribute__((section(".irom.text"))) = {s}; &__c[0];}))
 
 #include <espressif/esp_common.h>
+#include <espressif/user_interface.h>
+
+#include <etstimer.h>
 #include <espressif/esp_system.h>
+#include <espressif/esp_timer.h>
+#include <espressif/osapi.h>
+
 #include "lwip/mem.h"
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "upgrade.h"
 #include "interface.h"
 #include "websocket.h"

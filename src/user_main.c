@@ -7,11 +7,20 @@
  * Description: entry file of user application
 *******************************************************************************/
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #include <espressif/esp_common.h>
+#include <espressif/user_interface.h>
+
 #include <espressif/esp_softap.h>
 #include <espressif/esp_wifi.h>
 #include <espressif/esp_system.h>
+
+#include <etstimer.h>
+#include <espressif/esp_timer.h>
+#include <espressif/osapi.h>
 
 #include "FreeRTOS.h"
 #include "task.h"

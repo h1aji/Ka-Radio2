@@ -11,8 +11,13 @@
 
 #include "c_types.h"
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "ntp.h"
 #include "interface.h"
+#include "telnet.h"
 
 // list of major public servers http://tf.nist.gov/tf-cgi/servers.cgi
 

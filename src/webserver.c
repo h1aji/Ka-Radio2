@@ -2,6 +2,17 @@
  * Copyright 2016 karawin (http://www.karawin.fr)
 */
 
+#include <string.h>
+
+#include <espressif/user_interface.h>
+
+#include <etstimer.h>
+#include <espressif/esp_system.h>
+#include <espressif/osapi.h>
+
+#include <esplibs/libmain.h>
+
+
 #include "webserver.h"
 #include "serv-fs.h"
 #include "interface.h"

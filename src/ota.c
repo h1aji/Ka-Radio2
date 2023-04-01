@@ -2,6 +2,8 @@
  * Copyright 2016 jp Cocatrix (http://www.karawin.fr)
 */
 
+#include <string.h>
+
 #include <espressif/esp_common.h>
 #include <espressif/esp_system.h>
 #include <espressif/user_interface.h>
@@ -14,7 +16,10 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
+
 #include "interface.h"
+#include "telnet.h"
+#include "flash.h"
 
 //#define pheadbuffer "Connection: keep-alive\r\n\
 //Cache-Control: no-cache\r\n\

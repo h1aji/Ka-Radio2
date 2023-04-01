@@ -3,10 +3,14 @@
 */
 
 #include "extram.h"
+#include "gpio.h"
 #include "buffer.h"
 #include "interface.h"
+#include "vs1053.h"
 #include "esp/spi.h"
 
+#include <string.h>
+#include <stdio.h>
 
 #include <FreeRTOS.h>
 #include <semphr.h>
@@ -29,8 +33,8 @@ ICACHE_FLASH_ATTR void spi_give_semaphore()
 
 void extramInit()
 {
-	char test[17]   = {"FFFFFFFF"};
-	char testram[17]= {"01234567"};;
+	char test[17]    = {"FFFFFFFF"};
+	char testram[17] = {"01234567"};
 	gpio15_output_conf();
 	gpio15_output_set(1);
 	externram = false;
@@ -82,3 +86,4 @@ uint32_t extramWrite(uint32_t size, uint32_t address, uint8_t *data)
 	spi_give_semaphore();
 	return i;
 }
+

@@ -11,12 +11,13 @@
 #include "lwip/err.h"
 #include "lwip/ip_addr.h"
 #include "lwip/mem.h"
+
 #include <stdlib.h>
 #include "interface.h"
 
 #include "c_types.h"
 
-#define BUFSIZE     512
+#define BUFSIZE        512
 #define CRC_BLOCK_SIZE 512
 uint16_t start_sec;
 static unsigned int *crc_table;

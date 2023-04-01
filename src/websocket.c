@@ -6,6 +6,8 @@
  * minimal implementaion for short data messages
 */
 
+#include <string.h>
+
 #include "websocket.h"
 #include "interface.h"
 

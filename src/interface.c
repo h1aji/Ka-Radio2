@@ -16,6 +16,10 @@
 #include "eeprom.h"
 #include "ntp.h"
 #include "interface.h"
+#include "flash.h"
+#include "telnet.h"
+#include "webclient.h"
+#include "websocket.h"
 
 char parslashquote[] = {"(\""};
 char parquoteslash[] = {"\")"};
@@ -827,16 +831,15 @@ ICACHE_FLASH_ATTR void syspatch(char* s)
 		kprintf(stritCMDERROR,0x0d);
 		free(device);
 		return;
-    }	
+    }
 	uint8_t value = atoi(t+2);
 	if (value == 0) 
 		device->options |= T_PATCH; 
 	else 
 		device->options &= NT_PATCH; // 0 = load patch
-	
-	saveDeviceSettings(device);	
+	saveDeviceSettings(device);
 	kprintf(stritPATCH,(device->options & T_PATCH)!= 0?"unloaded":"Loaded");
-	free(device);	
+	free(device);
 }
 
 ICACHE_FLASH_ATTR void sysled(char* s)
@@ -859,10 +862,10 @@ ICACHE_FLASH_ATTR void sysled(char* s)
     }	
 	uint8_t value = atoi(t+2);
 	if (value != 0)
-	saveDeviceSettings(device);	
+	saveDeviceSettings(device);
 	free(device);
 
-	sysled((char*) "");		
+	sysled((char*) "");
 }
 
 ICACHE_FLASH_ATTR void tzoffset(char* s)
@@ -885,10 +888,10 @@ ICACHE_FLASH_ATTR void tzoffset(char* s)
 		return;
     }	
 	uint8_t value = atoi(t+2);
-	device->tzoffset = value;	
-	saveDeviceSettings(device);	
+	device->tzoffset = value;
+	saveDeviceSettings(device);
 	free(device);
-	tzoffset((char*) "");	
+	tzoffset((char*) "");
 }
 
 ICACHE_FLASH_ATTR void heapSize()
@@ -906,10 +909,10 @@ ICACHE_FLASH_ATTR void checkCommand(int size, char* s)
 //	kprintf(PSTR("size: %d, cmd=%s\n"),size,tmp);
 	if(startsWith ("wifi.", tmp))
 	{
-		if     (strcmp(tmp+5, "list") == 0) 	wifiScan();
-		else if(strcmp(tmp+5, "con") == 0) 	wifiConnectMem();
-		else if(startsWith ("con", tmp+5)) 	wifiConnect(tmp);
-		else if(strcmp(tmp+5, "rssi") == 0) 	readRssi();
+		if     (strcmp(tmp+5, "list") == 0) wifiScan();
+		else if(strcmp(tmp+5, "con") == 0) wifiConnectMem();
+		else if(startsWith ("con", tmp+5)) wifiConnect(tmp);
+		else if(strcmp(tmp+5, "rssi") == 0) readRssi();
 		else if(strcmp(tmp+5, "discon") == 0) wifiDisconnect();
 		else if(strcmp(tmp+5, "status") == 0) wifiStatus();
 		else if(strcmp(tmp+5, "station") == 0) wifiGetStation();
@@ -917,40 +920,40 @@ ICACHE_FLASH_ATTR void checkCommand(int size, char* s)
 	} else
 	if(startsWith ("cli.", tmp))
 	{
-		if     (startsWith (  "url", tmp+4)) 	clientParseUrl(tmp);
-		else if(startsWith (  "path", tmp+4))	clientParsePath(tmp);
-		else if(startsWith (  "port", tmp+4)) 	clientParsePort(tmp);
+		if     (startsWith (  "url", tmp+4)) clientParseUrl(tmp);
+		else if(startsWith (  "path", tmp+4)) clientParsePath(tmp);
+		else if(startsWith (  "port", tmp+4)) clientParsePort(tmp);
 		else if(strcmp(tmp+4, "instant") == 0) {clientDisconnect(PSTR("cli instantplay"));clientConnectOnce();}
-		else if(strcmp(tmp+4, "start") == 0) 	clientPlay("(\"255\")"); // outside value to play the current station
-		else if(strcmp(tmp+4, "stop") == 0) 	clientDisconnect(PSTR("cli stop"));
-		else if(startsWith (  "list", tmp+4)) 	clientList(tmp);
-		else if(strcmp(tmp+4, "next") == 0) 	wsStationNext();
+		else if(strcmp(tmp+4, "start") == 0) clientPlay("(\"255\")"); // outside value to play the current station
+		else if(strcmp(tmp+4, "stop") == 0) clientDisconnect(PSTR("cli stop"));
+		else if(startsWith (  "list", tmp+4)) clientList(tmp);
+		else if(strcmp(tmp+4, "next") == 0) wsStationNext();
 		else if(strncmp(tmp+4,"previous",4) == 0) wsStationPrev();
-		else if(startsWith (  "play",tmp+4)) 	clientPlay(tmp);
-		else if(strcmp(tmp+4, "vol+") == 0) 	setVolumePlus();
-		else if(strcmp(tmp+4, "vol-") == 0) 	setVolumeMinus();
-		else if(strcmp(tmp+4, "info") == 0) 	clientInfo();
-		else if(startsWith (  "vol",tmp+4)) 	clientVol(tmp);
-		else if(startsWith (  "edit",tmp+4)) 	clientEdit(tmp);
+		else if(startsWith (  "play",tmp+4)) clientPlay(tmp);
+		else if(strcmp(tmp+4, "vol+") == 0) setVolumePlus();
+		else if(strcmp(tmp+4, "vol-") == 0) setVolumeMinus();
+		else if(strcmp(tmp+4, "info") == 0) clientInfo();
+		else if(startsWith (  "vol",tmp+4)) clientVol(tmp);
+		else if(startsWith (  "edit",tmp+4)) clientEdit(tmp);
 		else printInfo(tmp);
 	} else
 	if(startsWith ("sys.", tmp))
 	{
-			 if(startsWith (  "i2s",tmp+4)) 	sysI2S(tmp);
-		else if(strcmp(tmp+4, "adc") == 0) 		readAdc();
-		else if(startsWith (  "uart",tmp+4)) 	sysUart(tmp);
-		else if(strcmp(tmp+4, "erase") == 0) 	eeEraseAll();
-		else if(strcmp(tmp+4, "heap") == 0) 	heapSize();
-		else if(strcmp(tmp+4, "boot") == 0) 	sdk_system_restart();
-		else if(strcmp(tmp+4, "update") == 0) 	update_firmware("new");
-		else if(strcmp(tmp+4, "prerelease") == 0) 	update_firmware("prv");
-		else if(startsWith (  "patch",tmp+4)) 	syspatch(tmp);
-		else if(startsWith (  "led",tmp+4)) 	sysled(tmp);
-		else if(strcmp(tmp+4, "date") == 0) 	ntp_print_time();
-		else if(strncmp(tmp+4, "version",4) == 0) 	kprintf(PSTR("Release: %s, Revision: %s, KaRadio\n"),RELEASE,REVISION);
-		else if(startsWith(   "tzo",tmp+4)) 	tzoffset(tmp);
-		else if(startsWith(   "log",tmp+4)) 	; // do nothing
-		else if(startsWith (  "host",tmp+4)) 	chostname(tmp);
+		 if(startsWith (  "i2s",tmp+4)) sysI2S(tmp);
+		else if(strcmp(tmp+4, "adc") == 0) readAdc();
+		else if(startsWith (  "uart",tmp+4)) sysUart(tmp);
+		else if(strcmp(tmp+4, "erase") == 0) eeEraseAll();
+		else if(strcmp(tmp+4, "heap") == 0) heapSize();
+		else if(strcmp(tmp+4, "boot") == 0) sdk_system_restart();
+		else if(strcmp(tmp+4, "update") == 0) update_firmware("new");
+		else if(strcmp(tmp+4, "prerelease") == 0) update_firmware("prv");
+		else if(startsWith (  "patch",tmp+4)) syspatch(tmp);
+		else if(startsWith (  "led",tmp+4)) sysled(tmp);
+		else if(strcmp(tmp+4, "date") == 0) ntp_print_time();
+		else if(strncmp(tmp+4, "version",4) == 0) kprintf(PSTR("Release: %s, Revision: %s, KaRadio\n"),RELEASE,REVISION);
+		else if(startsWith(   "tzo",tmp+4)) tzoffset(tmp);
+		else if(startsWith(   "log",tmp+4)) ; // do nothing
+		else if(startsWith (  "host",tmp+4)) chostname(tmp);
 		else printInfo(tmp);
 	}
 	else 
@@ -968,5 +971,4 @@ ICACHE_FLASH_ATTR void checkCommand(int size, char* s)
 		else printInfo(tmp);
 	}	
 	free(tmp);
-	
 }

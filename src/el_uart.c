@@ -1,3 +1,7 @@
+
+#include <espressif/esp_misc.h>
+#include "espressif/sdk_private.h"
+
 #include "el_uart.h"
 
 //#define DBG kprintf
@@ -103,7 +107,7 @@ int ICACHE_FLASH_ATTR uart_rx_available(void)
 
 void ICACHE_FLASH_ATTR uart_set_baud(int uart, int baud)
 {
-	uart_div_modify(uart, UART_CLK_FREQ / (baud));
+	sdk_uart_div_modify(uart, UART_CLK_FREQ / (baud));
 }
 
 /*

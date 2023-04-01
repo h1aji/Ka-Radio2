@@ -2,6 +2,8 @@
  * Copyright 2016 karawin (http://www.karawin.fr)
 */
 
+#include <string.h>
+
 #include "webclient.h"
 #include "webserver.h"
 

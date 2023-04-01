@@ -7,8 +7,13 @@
 
 #include "c_types.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <espressif/esp8266/eagle_soc.h>
 #include <espressif/spi_flash.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "interface.h"
 #include "eeprom.h"
