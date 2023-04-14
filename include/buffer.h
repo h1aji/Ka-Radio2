@@ -1,6 +1,6 @@
 /*
  * Copyright 2016 Piotr Sperka (http://www.piotrsperka.info)
-*/
+ */
 
 #ifndef __BUFFER_H__
 #define __BUFFER_H__

@@ -1,12 +1,13 @@
-/* (c)jp cocatrix May 2016
- *
+/*
  * Copyright 2016 karawin (http://www.karawin.fr)
  *
  * quick and dirty websocket inplementation for wifi webradio
  * minimal implementaion for short data messages
-*/
+ */
 
 #include <string.h>
+
+#include "c_types.h"
 
 #include "websocket.h"
 #include "interface.h"
@@ -14,6 +15,8 @@
 const char strwMALLOC[] ICACHE_RODATA_ATTR STORE_ATTR  = {"inwmalloc fails for %d\n"};
 const char strwMALLOC1[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Websocket %s malloc fails\n"};
 const char strwSOCKET[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Websocket socket fails %s errno: %d\n"};
+
+typedef struct { uint32_t state[5]; uint32_t count[2]; unsigned char buffer[64]; } SHA1_CTX;
 
 client_t webserverclients[NBCLIENT];
 //set of socket descriptors

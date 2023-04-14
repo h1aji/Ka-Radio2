@@ -1,16 +1,19 @@
-
 /*
  *  Created on: 25-04-2011
  *  Author: Przemyslaw Stasiak
  */
 
 #pragma once
-#include "c_types.h"
+#include <stdint.h>
 
-#define RST_PIN       -1
+// define SPI interface
+#define SPI_BUS       1
+#define SPI_SCK_GPIO  14
+#define SPI_MOSI_GPIO 13
+#define SPI_MISO_GPIO 12
 
 #define CS_PIN        2
-#define XDCS_PIN      16
+#define DCS_PIN       16
 #define DREQ_PIN      10
 
 #define SET   1

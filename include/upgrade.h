@@ -27,7 +27,7 @@
 
 #include "lwip/sockets.h"
 #include "c_types.h"
-#include "FreeRTOS.h"
+#include <FreeRTOS.h>
 
 #ifdef __cplusplus
 

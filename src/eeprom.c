@@ -1,19 +1,16 @@
-/******************************************************************************
- *
- * Copyright 2017 karawin (http://www.karawin.fr)
+/*
+ * Copyright 2017 jp Cocatrix (http://www.karawin.fr)
  * il ne faut pas decoder KaRadio
- *
-*******************************************************************************/
-
-#include "c_types.h"
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <espressif/esp8266/eagle_soc.h>
 #include <espressif/spi_flash.h>
-#include "FreeRTOS.h"
-#include "task.h"
+#include <FreeRTOS.h>
+#include <task.h>
 
 #include "interface.h"
 #include "eeprom.h"

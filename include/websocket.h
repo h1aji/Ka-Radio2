@@ -1,8 +1,8 @@
 /*
- * quick and dirty websocket inplementation for wifi webradio
- *
  * Copyright 2017 karawin (http://www.karawin.fr)
-*/
+ *
+ * quick and dirty websocket inplementation for wifi webradio
+ */
 
 #ifndef __WEBSOCKET_H__
 #define __WEBSOCKET_H__
@@ -20,10 +20,8 @@
 #include <espressif/esp_softap.h>
 #include <espressif/esp_wifi.h>
 
-#include "libsha1.h"
-
 #include "cencode_inc.h"
-#include <c_types.h>
+#include <stdlib.h>
 
 #define NBCLIENT 5
 #define MAXDATA 528

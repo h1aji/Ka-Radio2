@@ -1,7 +1,8 @@
 /*
- * quick and dirty telnet inplementation for wifi webradio
  * Copyright 2017 karawin (http://www.karawin.fr)
-*/
+ *
+ * quick and dirty telnet inplementation for wifi webradio
+ */
 
 #ifndef __TELNET_H__
 #define __TELNET_H__
@@ -20,7 +21,7 @@
 #include "lwip/netdb.h"
 
 //#include "cencode_inc.h"
-#include "c_types.h"
+#include <stdbool.h>
 
 #define NBCLIENTT 5
 //#define MAXDATAT 256

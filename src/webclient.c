@@ -4,16 +4,14 @@
 
 #include <string.h>
 
-#include "webclient.h"
-#include "webserver.h"
-
 #include "lwip/sockets.h"
 #include "lwip/api.h"
 #include "lwip/netdb.h"
-
 #include <espressif/esp_common.h>
-#include "semphr.h"
+#include <semphr.h> 
 
+#include "webclient.h"
+#include "webserver.h"
 #include "vs1053.h"
 #include "eeprom.h"
 #include "buffer.h"

@@ -9,10 +9,11 @@
 #include <mdnsresponder.h>
 
 //#include "osapi.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdarg.h>
+
 #include "eeprom.h"
 #include "ntp.h"
 #include "interface.h"
@@ -171,7 +172,7 @@ void setHostname(char* s)
 	sdk_wifi_get_ip_info ( STATION_IF, info );
 	vTaskDelay(1);
 //	printf("HOSTAME2\n");
-    mdns_init();
+    	mdns_init();
 	mdns_add_A(s, 120, info->ip.addr);
 	vTaskDelay(1);
 	free(info);
@@ -300,7 +301,7 @@ ICACHE_FLASH_ATTR void printInfo(char* s)
 
 const char msgScan[] = {"#WIFI.LIST#"};
 
-ICACHE_FLASH_ATTR void wifiScanCallback(void *arg, STATUS status)
+ICACHE_FLASH_ATTR void wifiScanCallback(void *arg, sdk_scan_status_t status)
 {
 	if(status == OK)
 	{
@@ -325,7 +326,7 @@ ICACHE_FLASH_ATTR void wifiScanCallback(void *arg, STATUS status)
 
 ICACHE_FLASH_ATTR void wifiScan()
 {
-	sdk_wifi_station_scan(NULL, wifiScanCallback);
+	sdk_wifi_station_scan(NULL, (sdk_scan_done_cb_t)&wifiScanCallback);
 }
 
 ICACHE_FLASH_ATTR void wifiConnect(char* cmd)

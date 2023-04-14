@@ -1,7 +1,8 @@
-// Simple NTP client for ESP8266.
-// Copyright 2016 jp cocatrix (KaraWin)
-// jp@karawin.fr
-// See license.txt for license terms.
+/*
+ * Copyright 2016 jp Cocatrix (http://www.karawin.fr)
+ *
+ * Simple NTP client for ESP8266
+*/
 
 #ifndef __NTP_H__
 #define __NTP_H__

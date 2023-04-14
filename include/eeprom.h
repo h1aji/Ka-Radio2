@@ -1,6 +1,7 @@
 #pragma once
 
-#include "c_types.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 #define HOSTLEN		24
 

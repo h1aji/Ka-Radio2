@@ -78,7 +78,7 @@ typedef enum {
     CANCEL,
 } STATUS;
 
-#define BIT(nr)     (1UL << (nr))
+//#define BIT(nr)     (1UL << (nr))
 
 #define REG_WRITE(_r, _v)       (*(volatile uint32 *)(_r)) = (_v)
 #define REG_READ(_r)            (*(volatile uint32 *)(_r))
@@ -86,7 +86,7 @@ typedef enum {
 #define REG_SET_BIT(_r, _b)     (*(volatile uint32 *)(_r) |= (_b))
 #define REG_CLR_BIT(_r, _b)     (*(volatile uint32 *)(_r) &= ~(_b))
 
-#define __packed            __attribute__((packed))
+//#define __packed            __attribute__((packed))
 #define STORE_ATTR          __attribute__((aligned(4)))
 
 #define SHMEM_ATTR

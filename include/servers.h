@@ -1,6 +1,6 @@
-/* (c)jp cocatrix May 2017
+/*
+ * Copyright 2017 jp Cocatrix (http://www.karawin.fr)
  *
- * Copyright 2017 karawin (http://www.karawin.fr)
  * Main task for the websocket and telnet servers.
 */
 

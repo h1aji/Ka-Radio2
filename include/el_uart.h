@@ -2,14 +2,14 @@
 #define _EL_UART_H_
 
 #include <espressif/esp_common.h>
-#include "FreeRTOS.h"
-#include "queue.h"
+#include <FreeRTOS.h>
+#include <queue.h>
 
 #include "c_types.h"
 
 #define UART0 0
 
-extern QueueHandle_t  uart_rx_queue;
+extern QueueHandle_t uart_rx_queue;
 extern volatile uint16_t uart_rx_overruns;
 extern volatile uint16_t uart_rx_bytes;
 

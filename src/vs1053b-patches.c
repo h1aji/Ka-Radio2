@@ -4,8 +4,6 @@
 
 #include "vs1053.h"
 #include "flash.h"
-#include "stdio.h"
-#include "stdlib.h"
 #include "interface.h"
 
 #define ICACHE_STORE_TYPEDEF_ATTR __attribute__((aligned(4),packed))

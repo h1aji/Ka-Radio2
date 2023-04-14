@@ -1,10 +1,14 @@
 /*
  * Copyright 2016 Piotr Sperka (http://www.piotrsperka.info)
-*/
+ */
+
 #ifndef __EXTRAM_H__
 #define __EXTRAM_H__
 
-#include "c_types.h"
+#include <stdint.h>
+
+#define SRAM_CS 15
+#define SPI_BUS 1
 
 void extramInit();
 void initBuffer();

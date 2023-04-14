@@ -1,22 +1,22 @@
 /*
  * Copyright 2016 jp Cocatrix (http://www.karawin.fr)
-*/
+ */
 
 #include <string.h>
+#include <math.h>
 
 #include <espressif/esp_common.h>
 #include <espressif/esp_system.h>
 #include <espressif/user_interface.h>
 
-#include "upgrade.h"
-#include "math.h"
-#include "FreeRTOS.h"
-#include "task.h"
+#include <FreeRTOS.h>
+#include <task.h>
 
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 
+#include "upgrade.h"
 #include "interface.h"
 #include "telnet.h"
 #include "flash.h"
@@ -36,93 +36,71 @@ Accept-Encoding: gzip,deflate,sdch\r\n\
 Cache-Control: no-cache\r\n\
 \r\n"
 
-const char strupd[] ICACHE_RODATA_ATTR STORE_ATTR  = {\
-"GET /user%d.4096.%s.4.bin HTTP/1.0\r\nHost: karadio.karawin.fr:80\r\n\
+const char strupd[] ICACHE_RODATA_ATTR STORE_ATTR = {
+  \
+  "GET /user%d.4096.%s.4.bin HTTP/1.0\r\nHost: karadio.karawin.fr:80\r\n\
 Connection: keep-alive\r\nCache-Control: no-cache\r\nUser-Agent: Karadio 1.5 \r\n\
-Accept: */*\r\nAccept-Encoding: gzip,deflate,sdch\r\n\r\n"};
+Accept: */*\r\nAccept-Encoding: gzip,deflate,sdch\r\n\r\n"
+};
 
-extern void wsUpgrade(const char* str,int count,int total);
+extern void wsUpgrade(const char* str, int count, int total);
 
-void user_esp_upgrade_rsp(void *arg)
-{
-    struct upgrade_server_info *server = (struct upgrade_server_info *)arg;
-    if(server->upgrade_flag == true)
-    {
-//		kprintf(PSTR("FW upgrade success.%c"),0x0d);
-		wsUpgrade("FW OK Refresh the page" , 0,100);
-		sdk_system_upgrade_reboot();
-    }
-    else
-    {
-//		kprintf(PSTR("-ERR: FW upgrade failed.%c"),0x0d);
-		wsUpgrade("FW upgrade failed." , 0,100);
-    }
-    free(server->url);
-    server->url = NULL;
-    free(server);
-    server = NULL;
+void user_esp_upgrade_rsp(void *arg) {
+  struct upgrade_server_info *server = (struct upgrade_server_info * ) arg;
+  if (server->upgrade_flag == true) {
+    //		kprintf(PSTR("FW upgrade success.%c"),0x0d);
+    wsUpgrade("FW OK Refresh the page", 0, 100);
+    sdk_system_upgrade_reboot();
+  } else {
+    //		kprintf(PSTR("-ERR: FW upgrade failed.%c"),0x0d);
+    wsUpgrade("FW upgrade failed.", 0, 100);
+  }
+  free(server->url);
+  server->url = NULL;
+  free(server);
+  server = NULL;
 }
 
-void update_firmware(char* fname)
-{
-    kprintf(PSTR("update  firmware \r%c"),0x0d);
-    uint8_t current_id = sdk_system_upgrade_userbin_check();
-//  kprintf(PSTR("current id %d\n"), current_id);
-    clientDisconnect(PSTR("Update"));
-//  char* client_url = "karadio.karawin.fr";
+void update_firmware(char* fname) {
+  kprintf(PSTR("update  firmware \r%c"), 0x0d);
+  uint8_t current_id = sdk_system_upgrade_userbin_check();
+  //  kprintf(PSTR("current id %d\n"), current_id);
+  clientDisconnect(PSTR("Update"));
+  //  char* client_url = "karadio.karawin.fr";
 
-//#define bin_url  "user%d.4096.%s.4.bin"
+  //#define bin_url  "user%d.4096.%s.4.bin"
 
-    typedef enum {
-        FLASH_SIZE_4M_MAP_256_256 = 0,  /**<  Flash size : 4Mbits. Map : 256KBytes + 256KBytes */
-        FLASH_SIZE_2M,                  /**<  Flash size : 2Mbits. Map : 256KBytes */
-        FLASH_SIZE_8M_MAP_512_512,      /**<  Flash size : 8Mbits. Map : 512KBytes + 512KBytes */
-        FLASH_SIZE_16M_MAP_512_512,     /**<  Flash size : 16Mbits. Map : 512KBytes + 512KBytes */
-        FLASH_SIZE_32M_MAP_512_512,     /**<  Flash size : 32Mbits. Map : 512KBytes + 512KBytes */
-        FLASH_SIZE_16M_MAP_1024_1024,   /**<  Flash size : 16Mbits. Map : 1024KBytes + 1024KBytes */
-        FLASH_SIZE_32M_MAP_1024_1024,   /**<  Flash size : 32Mbits. Map : 1024KBytes + 1024KBytes */
-        FLASH_SIZE_32M_MAP_2048_2048,   /**<  attention: don't support now ,just compatible for nodemcu;
-                                            Flash size : 32Mbits. Map : 2048KBytes + 2048KBytes */
-        FLASH_SIZE_64M_MAP_1024_1024,   /**<  Flash size : 64Mbits. Map : 1024KBytes + 1024KBytes */
-        FLASH_SIZE_128M_MAP_1024_1024   /**<  Flash size : 128Mbits. Map : 1024KBytes + 1024KBytes */
+  struct upgrade_server_info * server = NULL;
+  server = (struct upgrade_server_info * ) malloc(sizeof(struct upgrade_server_info));
+  memset(server, 0, sizeof(struct upgrade_server_info));
+  server->check_cb = user_esp_upgrade_rsp; //set upgrade check call back function
+  server->check_times = 360000;
+  server->upgrade_flag = true;
+  if (server->url == NULL) {
+    server->url = (uint8_t *) malloc(512);
+  }
+  kprintf(PSTR("flash size  %d\n"), sdk_flashchip.chip_size);
+  if (current_id == 0) {
+    current_id = 2;
+  } else
+    current_id = 1;
+  char* fmt = malloc(strlen(strupd) + 16);
+  flashRead(fmt, (int) strupd, strlen(strupd));
+  fmt[strlen(strupd)] = 0;
+  sprintf(server->url, fmt, current_id, fname);
+  free(fmt);
 
-    } flash_size_map;
+  //    sprintf(server->url, "GET /user%d.4096.%s.4.bin HTTP/1.0\r\nHost: %s:80\r\n"pheadbuffer"",current_id,fname, client_url);
+  //printf("http_req : %s\n", server->url);
 
-    struct upgrade_server_info *server = NULL;
-    server = (struct upgrade_server_info *)malloc(sizeof(struct upgrade_server_info));
-    memset(server, 0, sizeof(struct upgrade_server_info));
-    server->check_cb = user_esp_upgrade_rsp;   //set upgrade check call back function
-    server->check_times = 360000;
-    server->upgrade_flag = true;
-    if (server->url == NULL)
-    {
-        server->url = (uint8_t *)malloc(512);
-    }
-    flash_size_map f_size = sdk_flashchip.chip_size;
-    kprintf(PSTR("flash size  %d\n"),f_size);
-    if (current_id == 0)
-	{
-	 current_id = 2;
-	}
-    else
-	current_id = 1;
-	char* fmt = malloc(strlen(strupd)+16);
-	flashRead(fmt,(int)strupd,strlen(strupd));
-	fmt[strlen(strupd)] = 0;
-	sprintf(server->url,fmt ,current_id,fname);
-	free(fmt);
+  struct hostent *serv;
+  serv = (struct hostent*) gethostbyname("karadio.karawin.fr");
+  server->sockaddrin.sin_family = AF_INET;
+  server->sockaddrin.sin_port = htons(80);
+  server->sockaddrin.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)(serv -> h_addr_list[0]))); // remote server ip
+  //printf("distant ip: %x   ADDR:%s\n",server->sockaddrin.sin_addr.s_addr,inet_ntoa(*(struct in_addr*)(serv-> h_addr_list[0])));
 
-//    sprintf(server->url, "GET /user%d.4096.%s.4.bin HTTP/1.0\r\nHost: %s:80\r\n"pheadbuffer"",current_id,fname, client_url);
-//printf("http_req : %s\n", server->url);
-
-	struct hostent *serv ;
-	serv =(struct hostent*)gethostbyname("karadio.karawin.fr");
-    server->sockaddrin.sin_family = AF_INET;
-    server->sockaddrin.sin_port   = htons(80);
-    server->sockaddrin.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)(serv-> h_addr_list[0]))); // remote server ip
-//printf("distant ip: %x   ADDR:%s\n",server->sockaddrin.sin_addr.s_addr,inet_ntoa(*(struct in_addr*)(serv-> h_addr_list[0])));
-
-    if (system_upgrade_start(server) == false) {
-        kprintf(PSTR("upgrade error%c"),0x0d);
-    }
+  if (system_upgrade_start(server) == false) {
+    kprintf(PSTR("upgrade error%c"), 0x0d);
+  }
 }
