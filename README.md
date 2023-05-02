@@ -12,23 +12,23 @@ Karadio requires [esp-open-rtos](https://github.com/SuperHouse/esp-open-rtos). I
 Install python modules required for web interface build
 
 ```sh
-$ sudo pip3 install rjsmin
-$ sudo pip3 install rcsmin
+sudo pip3 install rjsmin
+sudo pip3 install rcsmin
 ```
 
 Clone karadio repository next to esp-open-rtos dir and run make.
 
 ```sh
-$ cd ~/esp/
-$ git clone https://github.com/h1aji/karadio.git
-$ cd karadio
-$ make
+cd ~/esp/
+git clone https://github.com/h1aji/karadio.git
+cd karadio
+make
 ```
 
 Flash new image
 
 ```sh
-$ make flash -j4
+make flash -j4
 ```
 * flash options can be edited in local.mk file
 
@@ -80,13 +80,8 @@ GPIO04  - SDA
 GPIO05  - SCL
 ```
 
+### Roadmap
 
-### Changelog
-
-### Todos
-
- - Migrate ntp code to sntp
- - Migrate webserver to extras/http
  - Add I2C LCD 20x4 support
  - Add IR support
 
