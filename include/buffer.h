@@ -7,8 +7,6 @@
 
 #include "c_types.h"
 
-// Comment line below if you don't want to use external SRAM
-//#define USE_EXTERNAL_SRAM 1
 #define BIGMEMORY 131072
 
 extern bool externram;
@@ -22,3 +20,4 @@ uint32_t bufferRead(uint8_t *data, uint32_t size);
 void bufferReset();
 
 #endif
+

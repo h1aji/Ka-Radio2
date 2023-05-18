@@ -24,7 +24,9 @@ void extramInit() {
   };
 
   gpio_enable(SRAM_CS, GPIO_OUTPUT);
-  spi_init(SPI_BUS, SPI_MODE0, SPI_FREQ_DIV_20M, true, SPI_LITTLE_ENDIAN, false);
+  gpio_write(SRAM_CS, 1);
+  spi_init(SPI_BUS, SPI_MODE0, SPI_FREQ_DIV_20M, true, SPI_LITTLE_ENDIAN, true);
+
   gpio_write(SRAM_CS, 0);
 
   externram = false;
@@ -43,7 +45,8 @@ void extramInit() {
 
 uint32_t extramRead(uint32_t size, uint32_t address, uint8_t *buffer) {
   uint32_t i = 0;
-  //	spi_clock(HSPI, 3, 2); //13MHz
+  spi_take_semaphore();
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_20M);
   gpio_write(SRAM_CS, 0);
 
   SPIPutChar(0x03);
@@ -55,13 +58,15 @@ uint32_t extramRead(uint32_t size, uint32_t address, uint8_t *buffer) {
   }
 
   gpio_write(SRAM_CS, 1);
-  //	spi_clock(HSPI, 4, 10); //2MHz
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
+  spi_give_semaphore();
   return i;
 }
 
 uint32_t extramWrite(uint32_t size, uint32_t address, uint8_t *data) {
   uint32_t i = 0;
-  //spi_clock(HSPI, 3, 2); //13MHz
+  spi_take_semaphore();
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_20M);
   gpio_write(SRAM_CS, 0);
 
   SPIPutChar(0x02);
@@ -73,7 +78,8 @@ uint32_t extramWrite(uint32_t size, uint32_t address, uint8_t *data) {
   }
 
   gpio_write(SRAM_CS, 1);
-  //	spi_clock(HSPI, 4, 10); //2MHz
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
+  spi_give_semaphore();
   return i;
 }
 

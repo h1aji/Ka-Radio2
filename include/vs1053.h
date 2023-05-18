@@ -3,6 +3,9 @@
  *  Author: Przemyslaw Stasiak
  */
 
+#ifndef VS1053_H_
+#define VS1053_H_
+
 #pragma once
 #include <stdint.h>
 
@@ -18,9 +21,6 @@
 
 #define SET   1
 #define RESET 0
-
-#ifndef VS1053_H_
-#define VS1053_H_
 
 #define RXNE                0x01
 #define TXE                 0x02
@@ -118,6 +118,8 @@ void VS1053_LowPower();
 void VS1053_HighPower();
 
 //private functions
+uint8_t spi_take_semaphore();
+void spi_give_semaphore();
 void SPIPutChar(uint8_t outB);
 uint8_t SPIGetChar();
 void Delay(uint32_t nTime);

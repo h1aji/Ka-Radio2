@@ -58,27 +58,31 @@ ICACHE_FLASH_ATTR void spi_give_semaphore() {
 }
 
 ICACHE_FLASH_ATTR void VS1053_HW_init() {
-  spi_init(1, SPI_MODE0, SPI_FREQ_DIV_2M, true, SPI_LITTLE_ENDIAN, true);
+
+  gpio_enable(DREQ_PIN, GPIO_INPUT);
 
   gpio_enable(CS_PIN, GPIO_OUTPUT);
+  gpio_write(CS_PIN, 1);
   gpio_enable(DCS_PIN, GPIO_OUTPUT);
-  gpio_enable(DREQ_PIN, GPIO_INPUT);
+ 
+  spi_init(SPI_BUS, SPI_MODE0, SPI_FREQ_DIV_2M, true, SPI_LITTLE_ENDIAN, true);
 }
 
 ICACHE_FLASH_ATTR void VS1053_SPI_SpeedUp() {
-  spi_set_frequency_div(1, SPI_FREQ_DIV_10M);
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_10M);
 }
 
 ICACHE_FLASH_ATTR void VS1053_SPI_SpeedDown() {
-  spi_set_frequency_div(1, SPI_FREQ_DIV_2M);
+  spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
 }
 
 ICACHE_FLASH_ATTR void SPIPutChar(uint8_t data) {
-  spi_transfer_8(1, data);
+  spi_transfer_8(SPI_BUS, data);
 }
 
 ICACHE_FLASH_ATTR uint8_t SPIGetChar() {
-  //	return spi_transfer_8(1);
+  	return spi_transfer_8(SPI_BUS,0xff);
+
 }
 
 ICACHE_FLASH_ATTR void Delay(uint32_t nTime) {
@@ -121,7 +125,6 @@ ICACHE_FLASH_ATTR void VS1053_WriteRegister(uint8_t addressbyte, uint8_t highbyt
 }
 
 ICACHE_FLASH_ATTR uint16_t VS1053_ReadRegister(uint8_t addressbyte) {
-  //    while(!spi_take_semaphore());
   spi_take_semaphore();
   VS1053_SPI_SpeedDown();
   uint16_t result;

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #define SRAM_CS 15
-#define SPI_BUS 1
 
 void extramInit();
 void initBuffer();

@@ -10,4 +10,4 @@ LIBS ?= gcc hal m
 
 include $(SDK_PATH)/common.mk
 
-CHEAT_ARG := $(shell ./web/generate.sh)
+## CHEAT_ARG := $(shell ./web/generate.sh)
