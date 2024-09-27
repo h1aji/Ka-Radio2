@@ -9,6 +9,7 @@
 #include <espressif/esp_system.h>
 #include <espressif/osapi.h>
 #include <esplibs/libmain.h>
+#include <esp/uart.h>
 
 #include "webserver.h"
 #include "serv-fs.h"
@@ -1023,12 +1024,12 @@ ICACHE_FLASH_ATTR bool httpServerHandleConnection(int conn, char * buf, uint16_t
       if (c_end != NULL) // commands api
       {
         char * param;
-        //				printf("GET commands  socket:%d command:%s\n",conn,c);
+        //printf("GET commands  socket:%d command:%s\n",conn,c);
         // uart command
         param = strstr(c, "uart");
         if (param != NULL) {
-          sdk_uart_div_modify(0, UART_CLK_FREQ / 115200);
-        } //UART_SetBaudrate(0, 115200);}	
+          uart_set_baud(0, 115200);
+        }
         // volume command				
         param = getParameterFromResponse("volume=", c, strlen(c));
         if ((param != NULL) && (atoi(param) >= 0) && (atoi(param) <= 254)) {

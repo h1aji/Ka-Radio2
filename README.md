@@ -1,6 +1,6 @@
 # ESP8266 Web Radio
 
-Karadio is a WiFi shoutcast player based on esp8266 and vs1053b chips
+Karadio is a WiFi shoutcast player based on esp8266 nodemcu and vs1053b chips
 This repo is a fork of [Ka-Radio](https://github.com/karawin/Ka-Radio) which is compiled with [esp-open-rtos](https://github.com/SuperHouse/esp-open-rtos)
 
 Please note: project is currently under developement
@@ -40,11 +40,10 @@ GPIO14    - SCK
 GPIO12    - MISO
 GPIO13    - MOSI
 GPIO16    - DCS
-GPIO10    - DREQ
-          - RST *
-GPIO02    - CS
+GPIO09    - DREQ
+GPIO10    - RST
+GPIO00    - CS
 
-*=connected through diodes
 ```
 
 Optional external RAM 23LCV1024 supported
@@ -70,7 +69,7 @@ External RAM is detected at boot time if connected.
 Infra-red sensor
 
 ```
-GPIO00  - OUT
+GPIO02  - OUT
 ```
 
 LCD 2004
@@ -82,10 +81,12 @@ GPIO05  - SCL
 
 ### Roadmap
 
- - Add I2C LCD 20x4 support
+ - Fix readRssi function in interface.c
+ - Add I2C LCD2004 or SSD1306 support
  - Add IR support
 
 License
 ----
 
 ESPRESSIF MIT
+

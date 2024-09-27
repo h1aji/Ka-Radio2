@@ -20,7 +20,6 @@
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 
-//#include "cencode_inc.h"
 #include <stdbool.h>
 
 #define NBCLIENTT 5

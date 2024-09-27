@@ -32,15 +32,9 @@ const char strsWSOCK[] ICACHE_RODATA_ATTR STORE_ATTR = {
 fd_set readfds;
 SemaphoreHandle_t semclient = NULL;
 
-const char strsocket[] = {
-  "Socket"
-};
-const char strbind[] = {
-  "Bind"
-};
-const char strlisten[] = {
-  "Listen"
-};
+const char strsocket[] = {"Socket"};
+const char strbind[] = {"Bind"};
+const char strlisten[] = {"Listen"};
 
 ICACHE_FLASH_ATTR void serversTask(void* pvParams) {
   //telnet

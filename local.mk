@@ -4,7 +4,7 @@
 FLASH_SIZE ?= 32
 
 # Flash mode, valid values are same as for esptool.py - qio,qout,dio.dout
-FLASH_MODE ?= qio
+FLASH_MODE ?= dio
 
 # Flash speed in MHz, valid values are same as for esptool.py - 80, 40, 26, 20
 FLASH_SPEED ?= 40

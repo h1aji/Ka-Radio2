@@ -15,11 +15,11 @@ uint32_t rptr = 0;
 uint8_t bempty = 1;
 
 ICACHE_FLASH_ATTR void initBuffer() {
-  if (externram == false) {
+  if (externram) {
+    BUFFER_SIZE = BIGMEMORY;
+  } else {
     BUFFER_SIZE = 20000;
     buffer = malloc(BUFFER_SIZE);
-  } else {
-    BUFFER_SIZE = BIGMEMORY;
   }
 }
 
@@ -86,4 +86,3 @@ ICACHE_FLASH_ATTR void bufferReset() {
   rptr = 0;
   bempty = 1;
 }
-

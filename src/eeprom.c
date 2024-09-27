@@ -11,10 +11,13 @@
 #include <espressif/spi_flash.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include "esp/spi.h"
 
 #include "interface.h"
 #include "eeprom.h"
 #include "flash.h"
+
+#define SPI_BUS       1 //HSPI_HOST
 
 #define ICACHE_STORE_TYPEDEF_ATTR __attribute__((aligned(4),packed))
 #define ICACHE_STORE_ATTR __attribute__((aligned(4)))
@@ -80,6 +83,7 @@ ICACHE_FLASH_ATTR void eeGetData(int address, void* buffer, int size)
 //printf("eeGetData, address= %d, size= %d\n", address,  size);
 	eeGetDatax(Eeprom_start,address,buffer,size);
 }
+
 ICACHE_FLASH_ATTR void eeGetData1(int address, void* buffer, int size)
 {
 	eeGetDatax(Eeprom_start1,address,buffer,size);
@@ -101,7 +105,7 @@ if (eebuf != NULL)
 		uint16_t startaddr = address & 0xFFF;
 		uint16_t maxsize = 4096 - startaddr;
 //printf("set1 startaddr: %x, size:%x, maxsize: %x, sector: %x, eebuf: %x\n",startaddr,size,maxsize,sector,eebuf);
-//		spi_clock(HSPI, 4, 10); //2MHz
+//		spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
 //		WRITE_PERI_REG(0x60000914, 0x73); //WDT clear
 		sdk_spi_flash_read(sector, (uint32_t *)eebuf, 4096);
 		vTaskDelay(1);
@@ -140,6 +144,7 @@ ICACHE_FLASH_ATTR bool  eeSetData1(int address, void* buffer, int size)
 ICACHE_FLASH_ATTR void eeSetClear(int address,uint8_t* eebuf)
 {
 		int i;
+		spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
 		WRITE_PERI_REG(0x60000914, 0x73); //WDT clear
 		uint32_t sector = (Eeprom_start + address) & 0xFFF000;
 		sdk_spi_flash_erase_sector(sector >> 12);
@@ -150,6 +155,7 @@ ICACHE_FLASH_ATTR void eeSetClear(int address,uint8_t* eebuf)
 ICACHE_FLASH_ATTR void eeSetClear1(int address,uint8_t* eebuf)
 {
 		int i;
+		spi_set_frequency_div(SPI_BUS, SPI_FREQ_DIV_2M);
 		WRITE_PERI_REG(0x60000914, 0x73); //WDT clear
 		uint32_t sector = (Eeprom_start1 + address) & 0xFFF000;
 		sdk_spi_flash_erase_sector(sector >> 12);

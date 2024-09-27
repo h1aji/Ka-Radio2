@@ -11,7 +11,6 @@
 
 #define PROGMEM  __attribute__((section(".irom.text")))
 #define STORE_ATTR __attribute__((aligned(4)))
-
 #define PSTR(s) (__extension__({ static const char __c[] STORE_ATTR __attribute__((section(".irom.text"))) = {s}; &__c[0];}))
 
 #include <espressif/esp_common.h>
@@ -281,7 +280,7 @@ void wsUpgrade(const char* str,int count,int total)
  * Parameters   :
  * Returns      :
 *******************************************************************************/
-LOCAL bool system_upgrade_internal(struct upgrade_param *upgrade, uint8_t *data, u32 len)
+LOCAL bool system_upgrade_internal(struct upgrade_param *upgrade, uint8_t *data, uint32_t len)
 {
     bool ret = false;
     uint16_t secnm=0;

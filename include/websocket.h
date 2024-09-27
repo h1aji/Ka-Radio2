@@ -20,7 +20,6 @@
 #include <espressif/esp_softap.h>
 #include <espressif/esp_wifi.h>
 
-#include "cencode_inc.h"
 #include <stdlib.h>
 
 #define NBCLIENT 5

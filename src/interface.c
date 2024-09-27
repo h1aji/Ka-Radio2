@@ -221,12 +221,16 @@ void readAdc()
 	adc = sdk_system_adc_read();
 	kprintf(PSTR("##ADC: %d * %d = %d\n"),adc,adcdiv,adc*adcdiv);
 }
-void readRssi()
-{
-	int8_t rssi;
-//	rssi = wifi_station_get_rssi();
-//	kprintf(PSTR("##RSSI: %d\n"),rssi);
+
+void readRssi() {
+//    int8_t rssi;
+
+// sdk_wifi_station_get_rssi is not available for esp-open-rtos
+
+//    rssi = sdk_wifi_station_get_rssi();
+//    kprintf(PSTR("##RSSI: %d\n"),rssi);
 }
+
 // Read the command panel
 void switchCommand() {
 	uint16_t adc;
@@ -301,7 +305,7 @@ ICACHE_FLASH_ATTR void printInfo(char* s)
 
 const char msgScan[] = {"#WIFI.LIST#"};
 
-ICACHE_FLASH_ATTR void wifiScanCallback(void *arg, sdk_scan_status_t status)
+ICACHE_FLASH_ATTR void wifiScanCallback(void *arg, STATUS status)
 {
 	if(status == OK)
 	{

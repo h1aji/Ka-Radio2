@@ -10,14 +10,12 @@
 #include <stdint.h>
 
 // define SPI interface
-#define SPI_BUS       1
-#define SPI_SCK_GPIO  14
-#define SPI_MOSI_GPIO 13
-#define SPI_MISO_GPIO 12
+#define SPI_BUS       1 //HSPI_HOST
 
-#define CS_PIN        2
+#define CS_PIN        0
 #define DCS_PIN       16
-#define DREQ_PIN      10
+#define DREQ_PIN      9
+#define RST_PIN       10
 
 #define SET   1
 #define RESET 0
@@ -120,8 +118,11 @@ void VS1053_HighPower();
 //private functions
 uint8_t spi_take_semaphore();
 void spi_give_semaphore();
-void SPIPutChar(uint8_t outB);
-uint8_t SPIGetChar();
+void spi_put_char(uint8_t outB);
+uint8_t spi_get_char();
+void spi_speed_up();
+void spi_speed_down();
+
 void Delay(uint32_t nTime);
 void ControlReset(uint8_t State);
 void SCI_ChipSelect(uint8_t State);
@@ -129,13 +130,11 @@ void SDI_ChipSelect(uint8_t State);
 void WriteVS10xxRegister(unsigned short addr,unsigned short val);
 void VS1053_WriteRegister(uint8_t addressbyte,uint8_t highbyte, uint8_t lowbyte);
 uint16_t VS1053_ReadRegister(uint8_t addressbyte);
-void VS1053_ResetChip();
 
 uint16_t MaskAndShiftRight(uint16_t Source, uint16_t Mask, uint16_t Shift);
 
+void VS1053_ResetChip();
 void VS1053_regtest();
-void VS1053_SPI_SpeedUp();
-void VS1053_SPI_SpeedDown();
 //void VS1053_PluginLoad();
 
 #endif /* VS1053_H_ */
