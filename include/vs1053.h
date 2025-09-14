@@ -9,9 +9,6 @@
 #pragma once
 #include <stdint.h>
 
-// define SPI interface
-#define SPI_BUS       1 //HSPI_HOST
-
 #define CS_PIN        0
 #define DCS_PIN       16
 #define DREQ_PIN      9
@@ -114,14 +111,6 @@ void VS1053_LowPower();
 
 // normal chip consumption
 void VS1053_HighPower();
-
-//private functions
-uint8_t spi_take_semaphore();
-void spi_give_semaphore();
-void spi_put_char(uint8_t outB);
-uint8_t spi_get_char();
-void spi_speed_up();
-void spi_speed_down();
 
 void Delay(uint32_t nTime);
 void ControlReset(uint8_t State);

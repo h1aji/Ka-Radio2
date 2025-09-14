@@ -1,6 +1,8 @@
 #ifndef __INTERFACE_H__
 #define __INTERFACE_H__
 
+#include "c_types.h"
+
 #undef PSTR
 #undef PROGMEM
 //#define PROGMEM   ICACHE_RODATA_ATTR

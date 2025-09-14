@@ -13,10 +13,9 @@
 #include <semphr.h>
 #include <task.h>
 
+#include "spilib.h"
 #include "extram.h"
-#include "buffer.h"
 #include "interface.h"
-#include "vs1053.h"
 
 void extramInit() {
   bool externram   = false;
@@ -76,4 +75,3 @@ uint32_t extramWrite(uint32_t size, uint32_t address, uint8_t *data) {
   spi_give_semaphore();
   return i;
 }
-
