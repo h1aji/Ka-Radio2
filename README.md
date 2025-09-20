@@ -82,7 +82,7 @@ GPIO05  - SCL
 ### Roadmap
 
  - Fix readRssi function in interface.c
- - Add I2C LCD2004 or SSD1306 support
+ - Add I2C SSD1306 support
  - Add IR support
 
 License

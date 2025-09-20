@@ -27,7 +27,6 @@
 #include "lwip/netdb.h"
 #include "lwip/ip4_addr.h"
 
-#include <lwip/apps/mdns.h>
 #include <mdnsresponder.h>
 
 #include <esp/uart.h>
@@ -48,12 +47,12 @@
 const char striDEF0[] ICACHE_RODATA_ATTR STORE_ATTR  = {"The default AP is  WifiKaRadio. Connect your wifi to it.\nThen connect a webbrowser to 192.168.4.1 and go to Setting\nMay be long to load the first time.Be patient.%c"};
 const char striDEF1[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Erase the database and set ssid, password and ip's field%c"};
 const char striAP[] ICACHE_RODATA_ATTR STORE_ATTR  = {"AP1: %s, AP2: %s\n"};
-const char striSTA1[] ICACHE_RODATA_ATTR STORE_ATTR  = {" AP1:Station Ip: %d.%d.%d.%d\n"};
-const char striSTA2[] ICACHE_RODATA_ATTR STORE_ATTR  = {" AP2:Station Ip: %d.%d.%d.%d\n"};
+const char striSTA1[] ICACHE_RODATA_ATTR STORE_ATTR  = {"AP1 Station IP: %d.%d.%d.%d\n"};
+const char striSTA2[] ICACHE_RODATA_ATTR STORE_ATTR  = {"AP2 Station IP: %d.%d.%d.%d\n"};
 const char striTRY[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Trying AP%d %s ,  I: %d status: %d\n"};
 const char striTASK[] ICACHE_RODATA_ATTR STORE_ATTR  = {"%s task: %x\n"};
 const char striHEAP[] ICACHE_RODATA_ATTR STORE_ATTR  = {"Heap size: %d\n"};
-const char striUART[] ICACHE_RODATA_ATTR STORE_ATTR  = {"UART READY%c"};
+const char striUART[] ICACHE_RODATA_ATTR STORE_ATTR  = {"UART READY %c\n"};
 const char striWATERMARK[] ICACHE_RODATA_ATTR STORE_ATTR  = {"watermark %s: %d  heap:%d\n"};
 
 //ip
@@ -62,42 +61,32 @@ static char localIp[20] = {"0.0.0.0"};
 //      void uart_div_modify(int no, unsigned int freq);
 //	struct sdk_station_config config;
 
-uint8_t FlashOn = 5,FlashOff = 5;
-uint8_t FlashCount = 0xFF;
-uint8_t FlashVolume = 0;
-
 char* getIp() { return (localIp); }
 
 void testtask(void* p) {
-	struct device_settings *device;	
-/*
-	int uxHighWaterMark;
-	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-	printf(striWATERMARK,"testtask",uxHighWaterMark,xPortGetFreeHeapSize( ));
-*/
+    struct device_settings *device;
 
-	vTaskDelay(10);
+    const TickType_t delayTicks = pdMS_TO_TICKS(500); // 500 ms delay, adjust as needed
 
-	while(FlashCount==0xFF) {
-		vTaskDelay(FlashOff);
-		
-		// save volume if changed		
-		device = getDeviceSettings();
-		if (device != NULL)
-		{	
-			if (device->vol != clientIvol)
-			{ 
-				device->vol = clientIvol;
-				saveDeviceSettings(device);
-//	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-//	printf(striWATERMARK,"testtask",uxHighWaterMark,xPortGetFreeHeapSize( ));
-			}
-			free(device);
-		}
-	}
-//	printf("t0 end\n");
-	vTaskDelete( NULL ); // stop the task
+    vTaskDelay(pdMS_TO_TICKS(10)); // initial short delay
+
+    while (1) {
+        vTaskDelay(delayTicks);
+
+        device = getDeviceSettings();
+        if (device != NULL) {
+            if (device->vol != clientIvol) {
+                device->vol = clientIvol;
+                saveDeviceSettings(device);
+            }
+            free(device);
+        }
+    }
+
+    // Not reached, but included for completeness
+    vTaskDelete(NULL);
 }
+
 
 void set_dhcp_hostname(char* hostname) {
     struct dhcp *dhcp_client;
@@ -117,29 +106,10 @@ void set_dhcp_hostname(char* hostname) {
 }
 
 //-------------------------
-// mDNS management
-//-------------------------
-void initMDNS(const char* host, uint32_t ip)
-{
-    // Initialize mDNS
-    mdns_init();
-
-    // Convert the uint32_t IP address to ip_addr_t
-    ip_addr_t ip_addr;
-    IP4_ADDR(&ip_addr, (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
-
-    // Register the mDNS service directly using the facility function
-    mdns_add_facility(host, "_http", NULL, mdns_TCP + mdns_Browsable, 80, 600);
-}
-
-//-------------------------
 // Wifi  management
 //-------------------------
 void initWifi()
 {
-//-------------------------
-// AP Connection management
-//-------------------------
 	uint16_t ap = 0;
 	int i = 0;	
 	char hostn[HOSTLEN];
@@ -151,175 +121,170 @@ void initWifi()
 	set_dhcp_hostname("WifiKaRadio");
 
 	device = getDeviceSettings();
-	device1 = getDeviceSettings1();  // extention of saved data
+	device1 = getDeviceSettings1();  // extension of saved data
 
 	config = malloc(sizeof(struct sdk_station_config));
 	info = malloc(sizeof(struct ip_info));
 	
-// if device1 not initialized, erase it and copy pass2 to the new place
-	if (device1->cleared != 0xAABB)
-	{		
+	if (device1->cleared != 0xAABB) {		
 		eeErasesettings1();
-		device1->cleared = 0xAABB; //marker init done
-		memcpy(device1->pass2,device->pass2, 64);
+		device1->cleared = 0xAABB;
+		memcpy(device1->pass2, device->pass2, 64);
 		saveDeviceSettings1(device1);	
-	}		
+	}
+
 	sdk_wifi_set_opmode_current(STATION_MODE);
 	sdk_wifi_station_set_auto_connect(false);
-	sdk_wifi_get_ip_info(STATION_IF, info); // ip netmask gw
-	sdk_wifi_station_get_config_default(config); //ssid passwd
-	if ((device->ssid[0] == 0xFF)&& (device->ssid2[0] == 0xFF) )  {eeEraseAll(); device = getDeviceSettings();} // force init of eeprom
-	if (device->ssid2[0] == 0xFF) {device->ssid2[0] = 0; device1->pass2[0] = 0; }
-	printf(striAP,device->ssid,device->ssid2);
+	sdk_wifi_get_ip_info(STATION_IF, info);
+	sdk_wifi_station_get_config_default(config);
+
+	if ((device->ssid[0] == 0xFF) && (device->ssid2[0] == 0xFF)) {
+		eeEraseAll();
+		device = getDeviceSettings(); // Reload after erase
+	}
+	if (device->ssid2[0] == 0xFF) {
+		device->ssid2[0] = 0;
+		device1->pass2[0] = 0;
+	}
+
+	printf(striAP, device->ssid, device->ssid2);
 		
-	// Check if it's the first use
 	if ((strlen(device->ssid) == 0) || (device->ssid[0] == 0xFF)) {
-	        printf("First use\n");
-	
-	        // Set IP addresses (replace deprecated IP4_ADDR with ip4addr_aton or directly assign)
+		printf("First use\n");
+
 		IP4_ADDR(&(info->ip), 192, 168, 1, 254);
-		IP4_ADDR(&(info->netmask), 0xFF, 0xFF,0xFF, 0);
+		IP4_ADDR(&(info->netmask), 0xFF, 0xFF, 0xFF, 0);
 		IP4_ADDR(&(info->gw), 192, 168, 1, 254);
 
+		memcpy(&device->ipAddr, &info->ip, sizeof(ip4_addr_t));
+		memcpy(&device->mask, &info->netmask, sizeof(ip4_addr_t));
+		memcpy(&device->gate, &info->gw, sizeof(ip4_addr_t));
+		strcpy(device->ssid, config->ssid);
+		strcpy(device->pass, config->password);
+		device->dhcpEn = true;
 
-	        // Copy IP information to device settings
-	        memcpy(&device->ipAddr, &info->ip, sizeof(ip4_addr_t));
-	        memcpy(&device->mask, &info->netmask, sizeof(ip4_addr_t));
-	        memcpy(&device->gate, &info->gw, sizeof(ip4_addr_t));
-	
-	        // Copy SSID and password from config to device
-	        strcpy(device->ssid, config->ssid);
-	        strcpy(device->pass, config->password);
-	
-	        // Enable DHCP
-	        device->dhcpEn = true;
-	
-	        // Set static IP configuration in the TCP/IP adapter
-		sdk_wifi_set_ip_info(STATION_IF, &info);
-	
-	        // Save device settings (assumes saveDeviceSettings is implemented elsewhere)
-	        saveDeviceSettings(device);
+		sdk_wifi_set_ip_info(STATION_IF, info);
+
+		saveDeviceSettings(device);
 	}
 	
-// set for AP1 //
-//-------------//
-	IP4_ADDR(&(info->ip), device->ipAddr[0], device->ipAddr[1],device->ipAddr[2], device->ipAddr[3]);
-	IP4_ADDR(&(info->netmask), device->mask[0], device->mask[1],device->mask[2], device->mask[3]);
-	IP4_ADDR(&(info->gw), device->gate[0], device->gate[1],device->gate[2], device->gate[3]);
+	IP4_ADDR(&(info->ip), device->ipAddr[0], device->ipAddr[1], device->ipAddr[2], device->ipAddr[3]);
+	IP4_ADDR(&(info->netmask), device->mask[0], device->mask[1], device->mask[2], device->mask[3]);
+	IP4_ADDR(&(info->gw), device->gate[0], device->gate[1], device->gate[2], device->gate[3]);
 
 	strcpy(config->ssid, device->ssid);
 	strcpy(config->password, device->pass);
 
 	sdk_wifi_station_set_config(config);
 	if (!device->dhcpEn) {
-        //  if ((strlen(device->ssid)!=0)&&(device->ssid[0]!=0xff)&&(!device->dhcpEn))
-        //  conn = true; //static ip
-            sdk_wifi_station_dhcpc_stop();
-            sdk_wifi_set_ip_info(STATION_IF, info);
-        }
-	printf(striSTA1,(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
-        sdk_wifi_station_connect();
+		sdk_wifi_station_dhcpc_stop();
+		sdk_wifi_set_ip_info(STATION_IF, info);
+	}
+	sdk_wifi_station_connect();
 
-  //	printf("DHCP: 0x%x\n Device: Ip: %d.%d.%d.%d\n",device->dhcpEn,device->ipAddr[0], device->ipAddr[1], device->ipAddr[2], device->ipAddr[3]);
-  //	printf("\nI: %d status: %d\n",i,wifi_station_get_connect_status());
+	printf(striSTA1, (info->ip.addr & 0xff), ((info->ip.addr >> 8) & 0xff), ((info->ip.addr >> 16) & 0xff), ((info->ip.addr >> 24) & 0xff));
 
-  i = 0;
-  while ((sdk_wifi_station_get_connect_status() != STATION_GOT_IP)) {
-    printf(striTRY, ap + 1, config -> ssid, i, sdk_wifi_station_get_connect_status());
-    FlashOn = FlashOff = 40;
-    vTaskDelay(400); //  ms
-    if ((strlen(config -> ssid) == 0) || (sdk_wifi_station_get_connect_status() == STATION_WRONG_PASSWORD) 
-                                      || (sdk_wifi_station_get_connect_status() == STATION_CONNECT_FAIL)
-                                      || (sdk_wifi_station_get_connect_status() == STATION_NO_AP_FOUND)) {
-      // try AP2 //
-      if ((strlen(device -> ssid2) > 0) && (ap < 1)) {
-        i = -1;
-        sdk_wifi_station_disconnect();
-        // set for AP2 //
-        //-------------//
-				IP4_ADDR(&(info->ip), device->ipAddr[0], device->ipAddr[1],device->ipAddr[2], device->ipAddr[3]);
-				IP4_ADDR(&(info->netmask), device->mask[0], device->mask[1],device->mask[2], device->mask[3]);
-				IP4_ADDR(&(info->gw), device->gate[0], device->gate[1],device->gate[2], device->gate[3]);
-				strcpy(config->ssid,device->ssid2);
-				strcpy(config->password,device1->pass2);
+	i = 0;
+	while (sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
+		printf(striTRY, ap + 1, config->ssid, i, sdk_wifi_station_get_connect_status());
+		vTaskDelay(400);
+
+		if ((strlen(config->ssid) == 0) || 
+		    (sdk_wifi_station_get_connect_status() == STATION_WRONG_PASSWORD) || 
+		    (sdk_wifi_station_get_connect_status() == STATION_CONNECT_FAIL) || 
+		    (sdk_wifi_station_get_connect_status() == STATION_NO_AP_FOUND)) {
+
+			if ((strlen(device->ssid2) > 0) && (ap < 1)) {
+				i = -1;
+
+				sdk_wifi_station_disconnect();
+				IP4_ADDR(&(info->ip), device->ipAddr[0], device->ipAddr[1], device->ipAddr[2], device->ipAddr[3]);
+				IP4_ADDR(&(info->netmask), device->mask[0], device->mask[1], device->mask[2], device->mask[3]);
+				IP4_ADDR(&(info->gw), device->gate[0], device->gate[1], device->gate[2], device->gate[3]);
+				strcpy(config->ssid, device->ssid2);
+				strcpy(config->password, device1->pass2);
 				sdk_wifi_station_set_config(config);
-				if (!device->dhcpEn)
-				{
+				if (!device->dhcpEn) {
 					sdk_wifi_station_dhcpc_stop();
 					sdk_wifi_set_ip_info(STATION_IF, info);
 				}
 				sdk_wifi_station_connect();
-				printf(striSTA2,(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
-        //----------------
-        ap++;
-      }
-      else i = 10; // go to SOFTAP_MODE
-    }
-    i++;
-    if (i >= 10) { // AP mode
-      printf(PSTR("%c"), 0x0d);
-      sdk_wifi_station_disconnect();
-      FlashOn = 10;
-      FlashOff = 200;
-      vTaskDelay(100);
-      //printf(PSTR("Config not found%c%c"),0x0d,0x0d);
-      saveDeviceSettings(device);
-			printf(striDEF0,0x0d);
-			printf(striDEF1,0x0d);
-			struct sdk_softap_config *apconfig;
-      apconfig = malloc(sizeof(struct sdk_softap_config));
-      sdk_wifi_set_opmode_current(SOFTAP_MODE);
-      vTaskDelay(10);
-      sdk_wifi_softap_get_config(apconfig);
-      vTaskDelay(10);
-      strcpy(apconfig->ssid, "KaRadio");
-      apconfig->ssid_len = 0;
-      //printf("passwd: %s\nhidden: %d\nmaxc: %d\nauth: %d\n",apconfig->password,apconfig->ssid_hidden,apconfig->max_connection,apconfig->authmode);
-			if (sdk_wifi_softap_set_config(apconfig) != true)printf(PSTR("softap failed%c%c"),0x0d,0x0d);
-      vTaskDelay(1);
-      sdk_wifi_get_ip_info(1, info);
-      //printf(striSTA1,(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
-      vTaskDelay(10);
-      //			conn = true;
-      free(apconfig);
-      break;
-    }
-  }
-  //wifi_station_set_reconnect_policy(true);
-  // update device info
-  if (sdk_wifi_get_opmode() == SOFTAP_MODE) sdk_wifi_get_ip_info(SOFTAP_IF, info);
-  else sdk_wifi_get_ip_info(STATION_IF, info); // ip netmask gw
-  sdk_wifi_station_get_config(config);
-  /*
-  	IPADDR2_COPY(&device->ipAddr, &info->ip);
-  	IPADDR2_COPY(&device->mask, &info->netmask);
-  	IPADDR2_COPY(&device->gate, &info->gw);
-  */
-	memcpy(&device->ipAddr, &info->ip, sizeof(&device->ipAddr));
-	memcpy(&device->mask, &info->netmask, sizeof(&device->mask));
-	memcpy(&device->gate, &info->gw, sizeof(&device->gate));
 
-  saveDeviceSettings(device);
-	printf(striSTA1,(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
-	kasprintf(localIp,PSTR("%d.%d.%d.%d"),(info->ip.addr&0xff), ((info->ip.addr>>8)&0xff), ((info->ip.addr>>16)&0xff), ((info->ip.addr>>24)&0xff));
-	// set modem sleep per default
-	//sdk_wifi_set_sleep_type(MODEM_SLEEP_T);
-	if ((strlen(device1->hostname) >= HOSTLEN) ||
-		(strlen(device1->hostname) == 0) || (device1->hostname[0] ==  0xff))
-	{
-		strcpy(hostn,"WifiKaRadio");
-		strcpy(device1->hostname,hostn);
-		saveDeviceSettings1(device1);
+				printf(striSTA2, (info->ip.addr & 0xff), ((info->ip.addr >> 8) & 0xff), ((info->ip.addr >> 16) & 0xff), ((info->ip.addr >> 24) & 0xff));
+				ap++;
+			} else {
+				i = 10; // go to SOFTAP_MODE
+			}
+		}
+		i++;
+		if (i >= 10) {
+			printf(PSTR("%c"), 0x0d);
+
+			sdk_wifi_station_disconnect();
+
+			vTaskDelay(100);
+			saveDeviceSettings(device);
+			printf(striDEF0, 0x0d);
+			printf(striDEF1, 0x0d);
+
+			struct sdk_softap_config *apconfig = malloc(sizeof(struct sdk_softap_config));
+
+			sdk_wifi_set_opmode_current(SOFTAP_MODE);
+			vTaskDelay(10);
+			sdk_wifi_softap_get_config(apconfig);
+			vTaskDelay(10);
+			strcpy(apconfig->ssid, "KaRadio");
+			apconfig->ssid_len = 0;
+			if (sdk_wifi_softap_set_config(apconfig) != true)
+				printf(PSTR("softap failed%c%c"), 0x0d, 0x0d);
+			vTaskDelay(1);
+			sdk_wifi_get_ip_info(SOFTAP_IF, info);
+			vTaskDelay(10);
+
+			free(apconfig);
+			break;
+		}
 	}
-	else strcpy(hostn,device1->hostname);
-	printf(PSTR("HOSTNAME: %s\nLocal IP: %s\n"),hostn,localIp);
-	initMDNS(hostn,info->ip.addr);
-	
+
+	if (sdk_wifi_get_opmode() == SOFTAP_MODE)
+		sdk_wifi_get_ip_info(SOFTAP_IF, info);
+	else
+		sdk_wifi_get_ip_info(STATION_IF, info);
+	sdk_wifi_station_get_config(config);
+
+	memcpy(&device->ipAddr, &info->ip, sizeof(device->ipAddr));
+	memcpy(&device->mask, &info->netmask, sizeof(device->mask));
+	memcpy(&device->gate, &info->gw, sizeof(device->gate));
+
+	saveDeviceSettings(device);
+
+	printf(striSTA1, (info->ip.addr & 0xff), ((info->ip.addr >> 8) & 0xff), ((info->ip.addr >> 16) & 0xff), ((info->ip.addr >> 24) & 0xff));
+	kasprintf(localIp, PSTR("%d.%d.%d.%d"), (info->ip.addr & 0xff), ((info->ip.addr >> 8) & 0xff), ((info->ip.addr >> 16) & 0xff), ((info->ip.addr >> 24) & 0xff));
+
+	if ((strlen(device1->hostname) >= HOSTLEN) || (strlen(device1->hostname) == 0) || (device1->hostname[0] == 0xff)) {
+		strcpy(hostn, "WifiKaRadio");
+		strcpy(device1->hostname, hostn);
+		saveDeviceSettings1(device1);
+	} else {
+		strcpy(hostn, device1->hostname);
+	}
+	printf(PSTR("HOSTNAME: %s\nLocal IP: %s\n"), hostn, localIp);
+
+
+        LOCK_TCPIP_CORE();
+
+	// Initialize mDNS
+	mdns_init();
+
+	// Register the mDNS service directly using the facility function
+	mdns_add_facility(hostn, "_http", NULL, mdns_TCP + mdns_Browsable, 80, 600);
+
+	UNLOCK_TCPIP_CORE();
+
 	free(info);
 	free(device);
 	free(device1);
 	free(config);
-
 }
 
 
@@ -374,7 +339,7 @@ void uartInterfaceTask(void *pvParameters) {
   ap = sdk_system_adc_read();
   if (ap < 10) {
     adcdiv = 0; // no panel adc grounded
-    kprintf(PSTR("No panel%c"), 0x0d);
+    kprintf(PSTR("No panel%c\n"), 0x0d);
   } else {
     // read adc to see if it is a nodemcu with adc dividor
     if (ap < 400) adcdiv = 3;
@@ -382,8 +347,6 @@ void uartInterfaceTask(void *pvParameters) {
     kprintf(PSTR("ADC Div: %d from adc: %d\n"), adcdiv, ap);
   }
 
-  FlashOn = 190;
-  FlashOff = 10;
 
   if ((sdk_wifi_get_opmode() == STATION_MODE)&&(device->autostart ==1))
 	{
