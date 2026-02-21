@@ -35,7 +35,7 @@ done
 cd $WORKDIR
 for f in $(ls *); do
  g="$(echo $f | sed -E 's/\.[a-z]+$//')"
- xxd -i $f | sed 's/^\s*unsigned/const/' > ../tmp_$g
+ xxd -i $f | sed 's/^\s*unsigned/const/' > ../$g
 done
 
 cd ..

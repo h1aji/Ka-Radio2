@@ -1,0 +1,7 @@
+# Binaries for programs and plugins
+*.o
+*.d
+*.a
+
+# build folder
+build/
